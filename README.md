@@ -101,8 +101,10 @@ Plannable ships skill instructions for three platforms — copy or reference the
 | Platform | Skill location | Invocation |
 | --- | --- | --- |
 | Claude Code | `.claude/skills/plannable/` | `/plannable create a CRM` |
-| Codex | `.agents/skills/plannable/` | `$plannable create a CRM` |
+| Codex | `.agents/skills/plannable/` (official discovery path; `.codex/skills/` ships as a mirror) | `$plannable create a CRM` |
 | Cursor | `.cursor/skills/plannable/` (+ `.cursor/commands/`, `.cursor/rules/`) | `/plannable create a CRM` |
+
+Plannable is a **skill** (the open [Agent Skills](https://agentskills.io) `SKILL.md` standard), not a plugin. Codex officially discovers repo skills from `.agents/skills/`; the `.codex/skills/` copy exists for setups that scan that path instead.
 
 The workflow is the same everywhere: create → enrich the draft with product-specific detail → run-next → implement → evidence → complete → verify.
 

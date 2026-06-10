@@ -10,6 +10,7 @@
     "dist",
     "templates",
     ".agents",
+    ".codex",
     ".claude",
     ".cursor",
     "docs",

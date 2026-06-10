@@ -41,7 +41,7 @@ npm run dev -- create "CRM"
 
 Plannable ships skill instructions for:
 
-- Codex: `.agents/skills/plannable/SKILL.md`
+- Codex: `.agents/skills/plannable/SKILL.md` (official discovery path; `.codex/skills/plannable/SKILL.md` is an identical mirror for setups that scan `.codex/skills`)
 - Claude Code: `.claude/skills/plannable/SKILL.md`
 - Cursor: `.cursor/skills/plannable/SKILL.md`
 

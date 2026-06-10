@@ -22,7 +22,7 @@ $plannable status
 $plannable verify
 ```
 
-Codex uses skill mention style: `$plannable`.
+Codex uses skill mention style: `$plannable`. Codex discovers repo skills from `.agents/skills/` (the official path per OpenAI's docs); Plannable also ships an identical mirror at `.codex/skills/` for setups that scan that location. Plannable is a skill (SKILL.md standard), not a plugin.
 
 ## Claude Code
 

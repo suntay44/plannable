@@ -140,6 +140,33 @@ describe("Plannable CLI", () => {
     });
   });
 
+  it("all platform skill files exist and stay aligned on core rules", async () => {
+    const skillPaths = [
+      ".agents/skills/plannable/SKILL.md",
+      ".codex/skills/plannable/SKILL.md",
+      ".claude/skills/plannable/SKILL.md",
+      ".cursor/skills/plannable/SKILL.md"
+    ];
+    const requiredMarkers = [
+      "@PlannablePlan v0.1",
+      "## Enrich the Draft (Important)",
+      "## CTX: Compressed Phase Context",
+      "## State Is Generated"
+    ];
+
+    for (const skillPath of skillPaths) {
+      const content = await readFile(path.join(repoRoot, skillPath), "utf8");
+      expect(content, skillPath).toMatch(/^---\nname: plannable\ndescription: /);
+      for (const marker of requiredMarkers) {
+        expect(content, `${skillPath} missing "${marker}"`).toContain(marker);
+      }
+    }
+
+    const agents = await readFile(path.join(repoRoot, ".agents/skills/plannable/SKILL.md"), "utf8");
+    const codex = await readFile(path.join(repoRoot, ".codex/skills/plannable/SKILL.md"), "utf8");
+    expect(codex, ".codex copy must stay identical to canonical .agents skill").toBe(agents);
+  });
+
   it("prints a friendly error when no plan exists in the directory", async () => {
     await withTempDir(async (dir) => {
       await expect(runPlannable(dir, ["status"])).rejects.toMatchObject({

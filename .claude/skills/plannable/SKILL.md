@@ -1,6 +1,6 @@
 ---
 name: plannable
-description: Scenario-driven planning workflow that creates MASTER_PLAN.md and compressed PlannablePlan .ai.md part files. Use when the user wants to create, split, run, verify, compress, expand, or status-check an implementation plan.
+description: Create, run, verify, and complete implementation plans (plannable, master plan, plan parts, run-next). Generates MASTER_PLAN.md and compressed PlannablePlan .ai.md part files for progressive, evidence-based execution. Use for planning a feature or product, splitting work into parts, checking plan status, recording evidence, or compressing/expanding plan files.
 ---
 
 # Plannable
