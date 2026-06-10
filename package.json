@@ -32,7 +32,7 @@
     "claude",
     "cursor"
   ],
-  "author": "",
+  "author": "Christian Patrick Suntay <xtiansun@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.14.10",
@@ -42,5 +42,13 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suntay44/Plannable.git"
+  },
+  "homepage": "https://github.com/suntay44/Plannable#readme",
+  "bugs": {
+    "url": "https://github.com/suntay44/Plannable/issues"
   }
 }

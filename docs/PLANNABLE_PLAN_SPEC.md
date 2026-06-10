@@ -4,6 +4,12 @@ PlannablePlan is the compressed AI-readable execution format used by Plannable.
 
 Do not call it PlanPack.
 
+## Stability and Versioning
+
+The `@PlannablePlan v0.1` format is **stable**. The header version only changes on breaking changes (removing or renaming a required field or block, or changing how an existing block is parsed). Additive changes — new optional blocks like `CTX:` — do not bump the version, and parsers must ignore unknown blocks.
+
+Parsers are tolerant of hand-written plans: CRLF line endings, extra blank lines, and spaces around field `=` signs (`ID = PART-001`) all parse identically to generated output.
+
 ## Header
 
 Every `.ai.md` part file must start with:

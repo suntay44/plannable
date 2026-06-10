@@ -15,8 +15,8 @@ plannable create "CRM"
 ## From Source
 
 ```bash
-git clone https://github.com/plannable/plannable.git
-cd plannable
+git clone https://github.com/suntay44/Plannable.git
+cd Plannable
 npm install
 npm run build
 npm link

@@ -311,7 +311,7 @@ export function compressToPlannablePlan(input: string, fallbackName = "Imported 
 }
 
 function parseField(content: string, field: string): string | undefined {
-  return content.match(new RegExp(`^${field}=\\s*(.+)$`, "m"))?.[1]?.trim();
+  return content.match(new RegExp(`^${field}\\s*=\\s*(.+)$`, "m"))?.[1]?.trim();
 }
 
 function parseBlock(content: string, blockName: string): string[] {
@@ -324,7 +324,7 @@ function parseBlock(content: string, blockName: string): string[] {
   const items: string[] = [];
   for (const line of lines.slice(start + 1)) {
     const trimmed = line.trim();
-    if (trimmed && (/^[A-Z][A-Z_]*:$/.test(trimmed) || /^[A-Z][A-Z_]*=/.test(trimmed))) {
+    if (trimmed && (/^[A-Z][A-Z_]*:$/.test(trimmed) || /^[A-Z][A-Z_]*\s*=/.test(trimmed))) {
       break;
     }
     if (trimmed) {

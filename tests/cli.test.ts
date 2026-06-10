@@ -140,6 +140,86 @@ describe("Plannable CLI", () => {
     });
   });
 
+  it("prints a friendly error when no plan exists in the directory", async () => {
+    await withTempDir(async (dir) => {
+      await expect(runPlannable(dir, ["status"])).rejects.toMatchObject({
+        stderr: expect.stringContaining("No Plannable plan found here")
+      });
+      await expect(runPlannable(dir, ["run-next"])).rejects.toMatchObject({
+        stderr: expect.stringContaining('plannable create "<product idea>"')
+      });
+    });
+  });
+
+  it("--version prints the package.json version", async () => {
+    await withTempDir(async (dir) => {
+      const pkg = JSON.parse(await readFile(path.join(repoRoot, "package.json"), "utf8"));
+      const result = await runPlannable(dir, ["--version"]);
+      expect(result.stdout.trim()).toBe(pkg.version);
+    });
+  });
+
+  it("parses hand-written plans with CRLF endings and spaces around field equals", () => {
+    const handWritten = [
+      "@PlannablePlan v0.1",
+      "",
+      "ID = PART-001",
+      "PH = CORE",
+      "SCN = SCN-001",
+      "OUT = Login works",
+      "",
+      "T:",
+      "1 build login form",
+      "",
+      "AC:",
+      "- user can log in",
+      "",
+      "V:",
+      "- npm test?",
+      "",
+      "DONE:",
+      "- update MASTER_PLAN.md Part 1=[x]",
+      "",
+      "S:",
+      "- stop if auth provider unclear"
+    ].join("\r\n");
+
+    const result = validatePlannablePlan(handWritten);
+    expect(result.ok).toBe(true);
+
+    const parsed = parsePlannablePlan(handWritten);
+    expect(parsed.id).toBe("PART-001");
+    expect(parsed.outcome).toBe("Login works");
+    expect(parsed.tasks).toEqual(["1 build login form"]);
+  });
+
+  it("parses masterplans with more than nine parts across multiple phases", () => {
+    const partBlock = (n: number) => [
+      `- [${n <= 4 ? "x" : " "}] Part ${n}: Read \`plans/PART${n}_PLAN.ai.md\``,
+      `  - Scenario: SCN-${String(n).padStart(3, "0")}`,
+      `  - Outcome: Outcome ${n} works`,
+      "  - Evidence: pending"
+    ].join("\n");
+    const master = [
+      "# MASTER_PLAN.md",
+      "",
+      "## Phase 1: Foundation",
+      "",
+      ...Array.from({ length: 6 }, (_, i) => partBlock(i + 1)),
+      "",
+      "## Phase 2: Growth",
+      "",
+      ...Array.from({ length: 6 }, (_, i) => partBlock(i + 7))
+    ].join("\n");
+
+    const parts = parseMasterPartStatuses(master);
+    expect(parts).toHaveLength(12);
+    expect(parts[11].partNumber).toBe(12);
+    expect(parts[0].phase).toBe("Phase 1: Foundation");
+    expect(parts[11].phase).toBe("Phase 2: Growth");
+    expect(parts.find((part) => part.status === "pending")?.partNumber).toBe(5);
+  });
+
   it("validation detects missing fields, old names, and empty blocks", () => {
     const invalid = [
       "@PlanPack v0.1",

@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import path from "node:path";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { compressCommand } from "./commands/compress.js";
 import { completeCommand } from "./commands/complete.js";
 import { createCommand } from "./commands/create.js";
@@ -11,9 +14,13 @@ import { runNextCommand } from "./commands/run-next.js";
 import { statusCommand } from "./commands/status.js";
 import { verifyCommand } from "./commands/verify.js";
 
-const HELP = `Plannable v0.1
+async function cliVersion(): Promise<string> {
+  const packagePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json");
+  const pkg = JSON.parse(await readFile(packagePath, "utf8")) as { version: string };
+  return pkg.version;
+}
 
-Usage:
+const HELP = `Usage:
   plannable create "CRM"
   plannable create "inventory management app"
   plannable run-next
@@ -74,17 +81,35 @@ async function main(argv: string[]): Promise<void> {
     case "expand":
       await expandCommand(cwd, args);
       break;
+    case "-v":
+    case "--version":
+      console.log(await cliVersion());
+      break;
     case "-h":
     case "--help":
     case undefined:
-      console.log(HELP);
+      console.log(`Plannable v${await cliVersion()}\n\n${HELP}`);
       break;
     default:
       throw new Error(`Unknown command: ${command}\n\n${HELP}`);
   }
 }
 
+const PLAN_FILES = new Set(["MASTER_PLAN.md", "PLAN_STATE.md", "PLAN_EVIDENCE.md"]);
+
 main(process.argv.slice(2)).catch((error: unknown) => {
+  const fsError = error as NodeJS.ErrnoException;
+  if (fsError?.code === "ENOENT" && typeof fsError.path === "string") {
+    if (PLAN_FILES.has(path.basename(fsError.path))) {
+      console.error(`No Plannable plan found here (missing ${path.basename(fsError.path)}).`);
+      console.error('Run: plannable create "<product idea>" to start one.');
+    } else {
+      console.error(`File not found: ${fsError.path}`);
+    }
+    process.exitCode = 1;
+    return;
+  }
+
   const message = error instanceof Error ? error.message : String(error);
   console.error(message);
   process.exitCode = 1;
