@@ -1,0 +1,46 @@
+{
+  "name": "plannable",
+  "version": "0.1.0",
+  "description": "Command-driven planning skill and CLI for AI coding agents.",
+  "type": "module",
+  "bin": {
+    "plannable": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "templates",
+    ".agents",
+    ".claude",
+    ".cursor",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "ai-agents",
+    "planning",
+    "cli",
+    "codex",
+    "claude",
+    "cursor"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "tsx": "^4.16.2",
+    "typescript": "^5.5.3",
+    "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

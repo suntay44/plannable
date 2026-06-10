@@ -1,0 +1,24 @@
+name: plannable
+version: 0.1.0
+description: Command-driven planning skill and CLI for progressive AI coding plans.
+commands:
+  - name: create
+    description: Create a scenario-driven Plannable plan.
+  - name: run-next
+    description: Load the next pending PlannablePlan part.
+  - name: status
+    description: Show plan completion and evidence status.
+  - name: verify
+    description: Verify files, headers, and completion evidence.
+  - name: evidence
+    description: Append evidence for a real Plannable part.
+  - name: complete
+    description: Check off a part after evidence exists and advance current state.
+  - name: doctor
+    description: Print status and verification together.
+  - name: repair
+    description: Repair common evidence and current-part drift.
+  - name: compress
+    description: Convert Markdown-ish task files into PlannablePlan files.
+  - name: expand
+    description: Expand PlannablePlan files into readable Markdown.
