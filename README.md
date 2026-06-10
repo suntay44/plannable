@@ -1,219 +1,124 @@
 # Plannable
 
-Plannable is a command-driven planning skill for AI coding agents.
+Command-driven planning for AI coding agents.
 
-It turns product ideas into scenario-driven master plans and compressed agent-readable part files, so AI agents can work progressively instead of drowning in giant Markdown plans.
+Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plus compressed, agent-readable part files (**PlannablePlan** `.ai.md` format). Agents load one part at a time — each part carries enough context about the whole masterplan to work alone — and nothing gets checked off without recorded evidence.
 
-Humans read a short, scenario-driven `MASTER_PLAN.md`. AI agents read compressed symbolic `.ai.md` part files one at a time. This keeps plans progressive, reduces context rot, and makes completion evidence-based.
+Think [spec-kit](https://github.com/github/spec-kit), but the plan is split into compressed parts where each part knows its place in the masterplan.
 
-The compressed AI format is called **PlannablePlan**.
+## Install
+
+```bash
+# From npm (when published)
+npm install -g plannable
+
+# From source
+git clone https://github.com/plannable/plannable.git
+cd plannable && npm install && npm run build && npm link
+```
+
+See [docs/INSTALL.md](docs/INSTALL.md) for local development setup.
+
+## Get Started
+
+```bash
+plannable create "CRM"     # generate MASTER_PLAN.md + compressed part files
+plannable run-next         # print the next pending part (load only this)
+# ...implement the part...
+plannable evidence PART-001 "Contact creation works" --artifact "npm test"
+plannable complete PART-001
+plannable verify           # structural + evidence checks for the whole plan
+```
+
+`create` accepts any product idea (`"SaaS billing dashboard"`, `"mobile habit tracker"`, `"backend API"`, ...). Common domains get sharper first drafts via scenario hints; everything else gets a generic draft that `verify` will warn you to enrich with product-specific detail before implementing.
+
+## Generated Files
+
+```txt
+MASTER_PLAN.md          short, scenario-driven plan for humans (source of truth)
+PLAN_EVIDENCE.md        evidence log — proof a part is actually done (source of truth)
+PLAN_STATE.md           progress view, generated from the two files above
+plans/PART*_PLAN.ai.md  compressed parts for agents, loaded one at a time
+```
+
+Each part file carries a `CTX:` block — the product goal, what prior parts delivered, and what comes next — so one part file is all the context an agent needs:
 
 ```txt
 @PlannablePlan v0.1
-```
 
-## Why Plannable?
-
-- SpecKit-style product scenarios
-- Predictable outcomes for each phase and part
-- Progressive context loading for agents
-- Compressed AI-readable execution files
-- Evidence-based checkoff before completion
-
-Long Markdown plans are easy for agents to skim badly, over-load into context, or treat as a vague TODO list. Plannable separates human orientation from agent execution: `MASTER_PLAN.md` stays short, while each `plans/PART*_PLAN.ai.md` file carries one compact scenario slice with tasks, acceptance criteria, verification, completion updates, and stop conditions.
-
-Unlike generic planning tools, Plannable is intentionally command-driven and evidence-based. It does not manage a hosted project board or call an AI API. It creates files that coding agents can read progressively and verify locally.
-
-## How Plannable Compares to SpecKit-Style Flows
-
-SpecKit produces long human-readable spec, plan, and task documents that an agent must load wholesale. Plannable keeps the human document short and pushes execution detail into compressed per-part files:
-
-- Each part file carries a `CTX:` block with the product goal, what prior parts delivered, and what comes next — so loading **one** part gives an agent the whole masterplan arc without loading the others.
-- `MASTER_PLAN.md` checkboxes and `PLAN_EVIDENCE.md` are the source of truth; `PLAN_STATE.md` is generated from them, so plan state cannot silently drift.
-- Completion is gated on recorded evidence (`plannable complete` refuses without it), and `plannable verify` structurally checks the whole plan — including warning when a plan still contains generic draft wording that hasn't been enriched for the actual product.
-
-## Quick Start
-
-```bash
-npm install
-npm run build
-npm run start -- create "CRM"
-npm run start -- run-next
-npm run start -- status
-npm run start -- verify
-```
-
-When published or linked globally:
-
-```bash
-plannable create "CRM"
-plannable create "inventory management app"
-plannable create "SaaS billing dashboard"
-plannable create "mobile habit tracker"
-plannable create "backend API"
-plannable run-next
-plannable status
-plannable verify
-```
-
-`CRM`, `TODO app`, `restaurant homepage`, `SaaS billing dashboard`, `mobile app`, and `API/backend` ideas use scenario hints: small domain-specific nudges that make common examples sharper. Plannable is not limited to them; `create` accepts any software product or implementation plan name and generates a three-part scenario plan.
-
-Scenario hints are not templates. They do not limit what Plannable can plan; they only improve the first draft when the product idea matches a familiar software domain.
-
-## Platform Command Styles
-
-Terminal CLI:
-
-```txt
-plannable create "CRM"
-plannable create "TODO app"
-plannable run-next
-plannable status
-plannable verify
-```
-
-Codex:
-
-```txt
-$plannable create a CRM
-$plannable run-next
-$plannable status
-$plannable verify
-```
-
-Claude Code:
-
-```txt
-/plannable create a CRM
-/plannable run-next
-/plannable status
-/plannable verify
-```
-
-Cursor:
-
-```txt
-/plannable create a CRM
-/plannable run-next
-/plannable status
-/plannable verify
-```
-
-Terminal uses the real executable command: `plannable`. Codex uses skill mention style: `$plannable`. Claude Code can invoke skills directly with `/plannable`. Cursor supports Plannable through Agent Skills and optional slash-command wrappers.
-
-The workflow stays the same everywhere, even if launcher syntax differs.
-
-## Generated Project
-
-```txt
-MASTER_PLAN.md
-PLAN_STATE.md
-PLAN_EVIDENCE.md
-plans/
-  PART1_PLAN.ai.md
-  PART2_PLAN.ai.md
-  PART3_PLAN.ai.md
-```
-
-`MASTER_PLAN.md` is for humans. `plans/PART*_PLAN.ai.md` files are for agents. Agents should load only the next pending part — its `CTX:` block summarizes everything delivered before it and what comes next.
-
-`PLAN_STATE.md` is generated from `MASTER_PLAN.md` and `PLAN_EVIDENCE.md` by `plannable evidence`, `plannable complete`, and `plannable repair`. Do not hand-edit it; run `plannable repair` if it drifts.
-
-## Folder Structure
-
-```txt
-src/                    TypeScript CLI source
-templates/              Generated plan templates
-docs/                   Install, command, workflow, spec, and platform docs
-examples/               Example Plannable projects
-.agents/skills/         Codex skill instructions
-.claude/skills/         Claude Code skill instructions
-.cursor/                Cursor skill, commands, and rules
-```
-
-## Commands
-
-- `plannable create "CRM"` creates a scenario-driven plan.
-- `plannable create "inventory management app"` creates a scenario-driven plan for an arbitrary software idea.
-- `plannable run-next` prints the next pending compressed part.
-- `plannable status` summarizes completion and evidence.
-- `plannable verify` checks required files, headers, and completion evidence.
-- `plannable evidence PART-001 "summary"` records evidence for a part.
-- `plannable complete PART-001` checks off a part after evidence exists.
-- `plannable doctor` prints status and verification together.
-- `plannable repair` fixes common plan/state drift.
-- Add `--json` to `run-next`, `status`, `verify`, or `doctor` for machine-readable output.
-- `plannable compress plan.md` converts a Markdown-ish task file into `plan.ai.md` and reports estimated token savings.
-- `plannable expand plans/PART1_PLAN.ai.md` expands a compressed part into a human summary.
-
-See [docs/COMMANDS.md](docs/COMMANDS.md) for details.
-
-## Advanced Init
-
-`plannable init` creates blank Plannable files in an existing project. It is not required before `create`, and it is not part of the normal workflow.
-
-Use `create` when you want generated scenarios:
-
-```bash
-plannable create "restaurant homepage"
-plannable create "SaaS billing dashboard"
-```
-
-## PlannablePlan Example
-
-```txt
-@PlannablePlan v0.1
-ID=PART-001
+ID=PART-002
 PH=CORE
-SCN=SCN-001
-OUT=Contact management works
+SCN=SCN-002
+OUT=Deal pipeline works
 
 CTX:
 - product: CRM — managing contacts, companies, deals, tasks, and follow-ups
-- phase: Core CRM Foundation (part 1/3)
-- prior: none — this is the first part
-- next: PART-002 covers "Deal pipeline works"
+- phase: Core CRM Foundation (part 2/3)
+- prior: PART-001 delivered "Contact management works"
+- next: PART-003 covers "Follow-up tasks work"
 
 T:
-1 create:contact.entity(fields=name,email,phone,company,notes)
-2 create:contact.form
+1 create:deal.entity(fields=title,company,value,stage)
+2 build:pipeline.stages
 
 AC:
-- can create contact
-- required fields validated
+- a deal can move through pipeline stages
 
 V:
-- npm run typecheck?
 - npm test?
 
 DONE:
-- update MASTER_PLAN.md Part 1=[x]
-- append PLAN_EVIDENCE.md#PART-001 with files+checks+notes
+- update MASTER_PLAN.md Part 2=[x]
+- append PLAN_EVIDENCE.md#PART-002 with files+checks+notes
 
 S:
 - if database stack unclear, stop and ask
 ```
 
-## Example Workflow
+Full format reference: [docs/PLANNABLE_PLAN_SPEC.md](docs/PLANNABLE_PLAN_SPEC.md).
 
-```bash
-plannable create "CRM"
-plannable run-next
-# Agent implements only the printed part.
-plannable evidence PART-001 "Implemented and verified contact creation." --artifact "npm test"
-plannable complete PART-001
-plannable status
-plannable verify
-plannable doctor --json
-```
+## Commands
 
-## Roadmap
+| Command | What it does |
+| --- | --- |
+| `plannable create "CRM"` | Generate a scenario-driven plan for any product idea |
+| `plannable run-next` | Print the next pending part (the only file an agent should load) |
+| `plannable status` | Show progress, grouped by masterplan phase |
+| `plannable evidence PART-001 "summary" --artifact "npm test"` | Record proof of completed work |
+| `plannable complete PART-001` | Check off a part — refuses without evidence |
+| `plannable verify` | Validate files, structure, evidence; warn on generic draft wording |
+| `plannable doctor` | Status + verification in one report |
+| `plannable repair` | Regenerate `PLAN_STATE.md` and fix drift after manual edits |
+| `plannable compress plan.md` | Convert a Markdown plan into `plan.ai.md`, reporting token savings |
+| `plannable expand plans/PART1_PLAN.ai.md` | Expand a compressed part back into readable Markdown |
 
-- Improve Markdown-to-PlannablePlan compression.
-- Add richer structural verification and repair suggestions.
-- Improve scenario hints for more software planning domains.
-- Add richer repair suggestions for uncommon plan drift.
-- Package and publish the CLI for npm installation.
+Add `--json` to `run-next`, `status`, `verify`, `doctor`, or `repair` for machine-readable output. Details: [docs/COMMANDS.md](docs/COMMANDS.md).
 
-See [docs/V1_ROADMAP.md](docs/V1_ROADMAP.md) for the v1 path and [docs/V1_AUDIT.md](docs/V1_AUDIT.md) for the current audit.
-# plannable
+## Using Plannable from an AI Agent
+
+Plannable ships skill instructions for three platforms — copy or reference the matching folder:
+
+| Platform | Skill location | Invocation |
+| --- | --- | --- |
+| Claude Code | `.claude/skills/plannable/` | `/plannable create a CRM` |
+| Codex | `.agents/skills/plannable/` | `$plannable create a CRM` |
+| Cursor | `.cursor/skills/plannable/` (+ `.cursor/commands/`, `.cursor/rules/`) | `/plannable create a CRM` |
+
+The workflow is the same everywhere: create → enrich the draft with product-specific detail → run-next → implement → evidence → complete → verify.
+
+## Rules That Keep Plans Honest
+
+- **One part at a time.** Agents load only the next pending `.ai.md` file; its `CTX:` block supplies the masterplan arc.
+- **Evidence before checkoff.** `complete` fails unless evidence is recorded in `PLAN_EVIDENCE.md`.
+- **No state drift.** `MASTER_PLAN.md` + `PLAN_EVIDENCE.md` are the source of truth; `PLAN_STATE.md` is generated from them — never hand-edit it, just run `plannable repair`.
+- **Drafts must be enriched.** `verify` warns while the plan still contains generic scaffold wording.
+
+## More
+
+- [docs/WORKFLOWS.md](docs/WORKFLOWS.md) — end-to-end workflows
+- [docs/COMPLETION_RULES.md](docs/COMPLETION_RULES.md) — what "done" requires
+- [docs/PLATFORM_SUPPORT.md](docs/PLATFORM_SUPPORT.md) — platform specifics
+- [examples/](examples/) — generated example projects (CRM, TODO app, restaurant homepage)
+- [docs/V1_ROADMAP.md](docs/V1_ROADMAP.md) — path to v1
+
+MIT licensed.
