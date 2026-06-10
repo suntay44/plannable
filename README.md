@@ -6,15 +6,22 @@ Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plu
 
 Think [spec-kit](https://github.com/github/spec-kit), but the plan is split into compressed parts where each part knows its place in the masterplan.
 
+## Use Cases
+
+- **Greenfield projects** — turn a product idea into a phased, scenario-driven plan in seconds
+- **AI-assisted development** — agents implement one part at a time without losing the big picture
+- **Multi-phase features** — break a complex feature into ordered parts with explicit hand-off context
+- **Audit trails** — every completed part has recorded evidence before it can be checked off
+- **Solo or team** — humans read `MASTER_PLAN.md`; agents read one `.ai.md` part at a time
+
 ## Install
 
-```bash
-# From npm (when published)
-npm install -g plannable
+> Requires Node.js 18+
 
+```bash
 # From source
-git clone https://github.com/plannable/plannable.git
-cd plannable && npm install && npm run build && npm link
+git clone https://github.com/suntay44/Plannable.git
+cd Plannable && npm install && npm run build && npm link
 ```
 
 See [docs/INSTALL.md](docs/INSTALL.md) for local development setup.
