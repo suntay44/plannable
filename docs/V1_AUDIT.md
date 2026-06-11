@@ -9,9 +9,12 @@
 - Codex, Claude Code, and Cursor skill files exist with platform-specific launchers.
 - Examples show progressive loading, pending parts, and evidence-backed completion.
 - Tests cover CLI creation, next-part detection, compression, expansion, validation failure cases, evidence, completion, and doctor checks.
+- Unit tests now cover core part-id helpers, master-plan updates, generated state, option parsing, compression, validation, and installation documentation.
 - `plannable evidence`, `plannable complete`, and `plannable doctor` cover the main evidence/checkoff loop.
 - `--json` output exists for `run-next`, `status`, `verify`, and `doctor`.
 - `plannable repair` fixes common evidence/current-part drift.
+- `npm pack`, `npm link`, and clean-project install smoke tests have passed locally.
+- Install docs now cover CLI, source install, Codex Desktop/Codex CLI, Claude Code, Cursor, and a plain-language "look at this GitHub repo and install Plannable" prompt.
 
 ## Missing
 
@@ -24,7 +27,7 @@
 
 - `init` was previously too close to `create`; it is now optional and blank, but needs real-world testing.
 - Verification is structural, not behavioral. It can prove evidence exists, but not that product code actually satisfies a scenario.
-- Error messages are clearer than v0.1, but they are not yet grouped by severity or available as JSON.
+- Error messages are clearer than v0.1, but they are not yet grouped by severity everywhere.
 
 ## Recommended Next Changes
 
@@ -32,4 +35,4 @@
 - Publish only after GitHub remote, initial commit, and final package metadata review.
 - Test skill install/use flows in Codex, Claude Code, and Cursor.
 - Improve compression from existing Markdown implementation plans.
-- Run `npm pack`, `npm link`, and a clean-project install test before publishing.
+- Repeat `npm pack`, `npm link`, and clean-project install smoke tests immediately before publishing.

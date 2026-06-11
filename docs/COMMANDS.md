@@ -113,7 +113,7 @@ Use `--json` for machine-readable output.
 Repairs common safe drift:
 
 - evidence exists but `MASTER_PLAN.md` still says `Evidence: pending`
-- evidence exists but `MASTER_PLAN.md` still says `Evidence: pending`
+- `PLAN_STATE.md` still says `Evidence: pending` after evidence was recorded
 - `PLAN_STATE.md` drifted from `MASTER_PLAN.md` and `PLAN_EVIDENCE.md` (it is regenerated wholesale from them)
 
 Examples:

@@ -19,12 +19,25 @@ Think [spec-kit](https://github.com/github/spec-kit), but the plan is split into
 > Requires Node.js 18+
 
 ```bash
-# From source
+npm install -g plannable
+plannable --version
+```
+
+Before npm publish, install from source:
+
+```bash
 git clone https://github.com/suntay44/Plannable.git
 cd Plannable && npm install && npm run build && npm link
 ```
 
-See [docs/INSTALL.md](docs/INSTALL.md) for local development setup.
+You can also ask your agent:
+
+```txt
+Look at this GitHub repo and install Plannable:
+https://github.com/suntay44/Plannable
+```
+
+See [docs/INSTALL.md](docs/INSTALL.md) for CLI, Codex Desktop, Claude Code, and Cursor install steps.
 
 ## Get Started
 
@@ -125,6 +138,7 @@ The workflow is the same everywhere: create → enrich the draft with product-sp
 ## More
 
 - [docs/WORKFLOWS.md](docs/WORKFLOWS.md) — end-to-end workflows
+- [docs/README_CLAIMS_AUDIT.md](docs/README_CLAIMS_AUDIT.md) — README claim-by-claim implementation check
 - [docs/COMPLETION_RULES.md](docs/COMPLETION_RULES.md) — what "done" requires
 - [docs/PLATFORM_SUPPORT.md](docs/PLATFORM_SUPPORT.md) — platform specifics
 - [examples/](examples/) — generated example projects (CRM, TODO app, restaurant homepage)
