@@ -3,7 +3,7 @@ import { renderMasterPlan } from "../core/master-plan.js";
 import { renderPartPlan } from "../core/plannable-plan.js";
 import { renderPlanState } from "../core/state.js";
 import { buildPlanModel } from "../core/templates.js";
-import { readTemplate, writeText } from "../core/filesystem.js";
+import { pathExists, readTemplate, writeText } from "../core/filesystem.js";
 
 export type CreateOptions = {
   cwd: string;
@@ -17,6 +17,12 @@ export async function createCommand(options: CreateOptions): Promise<void> {
 
   if (!productInput) {
     throw new Error('Usage: plannable create "CRM"');
+  }
+
+  if (!overwrite && await pathExists(path.join(options.cwd, "MASTER_PLAN.md"))) {
+    throw new Error(
+      "A Plannable plan already exists here.\nRun: plannable create \"<product idea>\" --force to regenerate it (this discards current progress)."
+    );
   }
 
   const model = buildPlanModel(productInput);

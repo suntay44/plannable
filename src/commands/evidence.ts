@@ -39,6 +39,11 @@ export async function evidenceCommand(cwd: string, args: string[]): Promise<void
   await writeText(masterPath, nextMaster, true);
   await writeText(statePath, nextState, true);
 
+  if (options.values.json) {
+    console.log(JSON.stringify({ ok: true, partId, summary, artifacts, alreadyRecorded, next: `plannable complete ${partId}` }, null, 2));
+    return;
+  }
+
   console.log(`Recorded evidence for ${partId}.`);
   if (alreadyRecorded) {
     console.log(`Note: ${partId} already had evidence; this entry was appended as additional evidence.`);

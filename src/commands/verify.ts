@@ -147,11 +147,15 @@ export async function verifyCommand(cwd: string, args: string[] = []): Promise<v
     return;
   }
 
-  printChecks(summary.checks);
+  const verbose = Boolean(options.values.verbose);
+  printChecks(summary.checks, verbose);
 
   for (const warning of summary.warnings) {
     console.log(`WARN ${warning}`);
   }
+
+  const passedCount = summary.checks.length - summary.failedCount;
+  console.log(`${passedCount} check(s) passed, ${summary.failedCount} failed.${verbose ? "" : " Use --verbose to list every check."}`);
 
   if (!summary.ok) {
     throw new Error(`Plannable verification failed: ${summary.failedCount} issue(s).`);
@@ -161,9 +165,11 @@ export async function verifyCommand(cwd: string, args: string[] = []): Promise<v
   console.log("Plannable verification passed.");
 }
 
-function printChecks(checks: Check[]): void {
+function printChecks(checks: Check[], verbose: boolean): void {
   for (const check of checks) {
-    console.log(`${check.ok ? "OK" : "FAIL"} ${check.message}`);
+    if (verbose || !check.ok) {
+      console.log(`${check.ok ? "OK" : "FAIL"} ${check.message}`);
+    }
   }
 }
 

@@ -12,7 +12,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 ### Added
 - `plannable init` accepts a project name: `plannable init "Legacy Billing Service"`.
+- `--json` output for `plannable evidence` and `plannable complete` — the whole workflow loop is now machine-readable.
+- `plannable verify` prints only failures, warnings, and a summary by default; `--verbose` lists every passing check.
+- Unknown commands suggest the closest match ("did you mean \"status\"?").
+- `--json`, `--force`, `--dry-run`, and `--verbose` are documented in `plannable --help`.
 - CONTRIBUTING.md and this changelog.
+
+### Changed
+- `plannable create` in a directory that already has a plan explains `--force` instead of printing a raw filesystem error.
+- `plannable complete` points to `plannable run-next` (or `verify` when the plan is done) instead of `status`.
+- Boolean flags (`--json`, `--force`, `--dry-run`, `--verbose`) can appear anywhere in the argument list without swallowing the next argument.
 
 ## [1.0.0] - 2026-06-10
 

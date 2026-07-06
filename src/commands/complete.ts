@@ -49,6 +49,14 @@ export async function completeCommand(cwd: string, args: string[]): Promise<void
   await writeText(masterPath, nextMaster, true);
   await writeText(statePath, nextState, true);
 
+  const nextPart = parseMasterPartStatuses(nextMaster).find((part) => part.status === "pending");
+  const next = nextPart ? "plannable run-next" : "plannable verify";
+
+  if (options.values.json) {
+    console.log(JSON.stringify({ ok: true, partId, completed: true, nextPart: nextPart?.path ?? null, next }, null, 2));
+    return;
+  }
+
   console.log(`Completed ${partId}.`);
-  console.log("Next: plannable status");
+  console.log(`Next: ${next}`);
 }

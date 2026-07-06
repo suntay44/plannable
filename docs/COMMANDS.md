@@ -84,11 +84,11 @@ Checks that:
 - evidence references a real part
 - `PLAN_STATE.md` current part matches the next unchecked part
 
-Use `--json` for machine-readable output.
+By default only failures, warnings, and a summary line are printed. Use `--verbose` to list every passing check, or `--json` for machine-readable output (always complete).
 
 ## `plannable evidence PART-001 "summary"`
 
-Adds evidence to `PLAN_EVIDENCE.md` for a real part.
+Adds evidence to `PLAN_EVIDENCE.md` for a real part. Warns if the part already had evidence.
 
 Examples:
 
@@ -97,15 +97,19 @@ plannable evidence PART-001 "Contact creation implemented and tested." --artifac
 plannable evidence P2 "Pipeline update manually verified." --file src/deals.ts --check "npm run build"
 ```
 
+Use `--json` for machine-readable output.
+
 ## `plannable complete PART-001`
 
-Checks off a part in `MASTER_PLAN.md`, marks evidence as recorded, and regenerates `PLAN_STATE.md` from the master plan and evidence log.
+Checks off a part in `MASTER_PLAN.md`, marks evidence as recorded, and regenerates `PLAN_STATE.md` from the master plan and evidence log. Points to `plannable run-next` while parts remain, or `plannable verify` when the plan is done.
 
 The part must already have evidence, unless you add it in the same command:
 
 ```bash
 plannable complete PART-001 --summary "Contact creation verified." --artifact "npm test"
 ```
+
+Use `--json` for machine-readable output.
 
 ## `plannable doctor`
 

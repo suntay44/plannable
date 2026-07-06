@@ -134,7 +134,7 @@ Full format reference: [docs/PLANNABLE_PLAN_SPEC.md](docs/PLANNABLE_PLAN_SPEC.md
 | `plannable compress plan.md` | Convert a Markdown plan into `plan.ai.md`, reporting token savings |
 | `plannable expand plans/PART1_PLAN.ai.md` | Expand a compressed part back into readable Markdown |
 
-Add `--json` to `run-next`, `status`, `verify`, `doctor`, or `repair` for machine-readable output. Details: [docs/COMMANDS.md](docs/COMMANDS.md).
+Every workflow command supports `--json` for machine-readable output. `verify` prints only failures by default (`--verbose` lists every check). Details: [docs/COMMANDS.md](docs/COMMANDS.md).
 
 ## Using Plannable from an AI Agent
 

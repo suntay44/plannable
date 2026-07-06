@@ -3,6 +3,10 @@ export type ParsedOptions = {
   values: Record<string, string[]>;
 };
 
+// Flags that never take a value, so they can appear anywhere without
+// swallowing the next argument.
+const BOOLEAN_FLAGS = new Set(["json", "force", "dry-run", "verbose"]);
+
 export function parseOptions(args: string[]): ParsedOptions {
   const positional: string[] = [];
   const values: Record<string, string[]> = {};
@@ -12,7 +16,7 @@ export function parseOptions(args: string[]): ParsedOptions {
     if (arg.startsWith("--")) {
       const key = arg.slice(2);
       const next = args[index + 1];
-      if (!next || next.startsWith("--")) {
+      if (BOOLEAN_FLAGS.has(key) || !next || next.startsWith("--")) {
         values[key] = [...(values[key] ?? []), "true"];
         continue;
       }

@@ -98,6 +98,15 @@ describe("core plan helpers", () => {
     expect(firstValue(options, "json")).toBe("true");
   });
 
+  it("boolean flags never swallow the next argument", () => {
+    const options = parseOptions(["evidence", "--json", "P1", "summary text", "--force", "--dry-run", "extra"]);
+
+    expect(options.positional).toEqual(["evidence", "P1", "summary text", "extra"]);
+    expect(firstValue(options, "json")).toBe("true");
+    expect(firstValue(options, "force")).toBe("true");
+    expect(firstValue(options, "dry-run")).toBe("true");
+  });
+
   it("rejects old names and base64-like compressed blobs", () => {
     const encoded = "A".repeat(220);
     const result = validatePlannablePlan(encoded);

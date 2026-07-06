@@ -34,7 +34,13 @@ const HELP = `Usage:
   plannable expand [plans/PART1_PLAN.ai.md]
 
 Advanced:
-  plannable init
+  plannable init ["Project Name"]
+
+Options:
+  --json      machine-readable output (run-next, status, verify, doctor, repair, evidence, complete)
+  --verbose   verify: list every passing check, not just failures
+  --force     create/init: overwrite existing plan files
+  --dry-run   repair: report drift without writing files
 
 Platform launchers:
   Terminal: plannable create "CRM"
@@ -90,9 +96,40 @@ async function main(argv: string[]): Promise<void> {
     case undefined:
       console.log(`Plannable v${await cliVersion()}\n\n${HELP}`);
       break;
-    default:
-      throw new Error(`Unknown command: ${command}\n\n${HELP}`);
+    default: {
+      const suggestion = closestCommand(command);
+      const hint = suggestion ? ` — did you mean "${suggestion}"?` : "";
+      throw new Error(`Unknown command: ${command}${hint}\n\n${HELP}`);
+    }
   }
+}
+
+const COMMANDS = ["create", "init", "run-next", "status", "verify", "evidence", "complete", "doctor", "repair", "compress", "expand"];
+
+function closestCommand(input: string): string | undefined {
+  let best: { command: string; distance: number } | undefined;
+  for (const command of COMMANDS) {
+    const distance = editDistance(input.toLowerCase(), command);
+    if (!best || distance < best.distance) {
+      best = { command, distance };
+    }
+  }
+  return best && best.distance <= 3 ? best.command : undefined;
+}
+
+function editDistance(a: string, b: string): number {
+  const previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i += 1) {
+    let diagonal = previous[0];
+    previous[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const insertOrDelete = Math.min(previous[j], previous[j - 1]) + 1;
+      const substitute = diagonal + (a[i - 1] === b[j - 1] ? 0 : 1);
+      diagonal = previous[j];
+      previous[j] = Math.min(insertOrDelete, substitute);
+    }
+  }
+  return previous[b.length];
 }
 
 const PLAN_FILES = new Set(["MASTER_PLAN.md", "PLAN_STATE.md", "PLAN_EVIDENCE.md"]);

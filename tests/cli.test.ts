@@ -472,4 +472,55 @@ describe("Plannable CLI", () => {
       expect(evidence).toMatch(/Project: Legacy Billing Service/);
     });
   });
+
+  it("evidence and complete support --json output", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["create", "CRM"]);
+
+      const evidence = JSON.parse((await runPlannable(dir, ["evidence", "P1", "Contacts verified.", "--json", "--artifact", "npm test"])).stdout);
+      expect(evidence.ok).toBe(true);
+      expect(evidence.partId).toBe("PART-001");
+      expect(evidence.alreadyRecorded).toBe(false);
+
+      const complete = JSON.parse((await runPlannable(dir, ["complete", "P1", "--json"])).stdout);
+      expect(complete.ok).toBe(true);
+      expect(complete.nextPart).toBe("plans/PART2_PLAN.ai.md");
+      expect(complete.next).toBe("plannable run-next");
+    });
+  });
+
+  it("create refuses politely when a plan exists and regenerates with --force", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["create", "CRM"]);
+
+      await expect(runPlannable(dir, ["create", "CRM"])).rejects.toMatchObject({
+        stderr: expect.stringContaining("A Plannable plan already exists here")
+      });
+
+      const forced = await runPlannable(dir, ["create", "TODO app", "--force"]);
+      expect(forced.stdout).toMatch(/Created Plannable project for TODO App/);
+    });
+  });
+
+  it("verify is quiet by default and lists every check with --verbose", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["create", "CRM"]);
+
+      const quiet = await runPlannable(dir, ["verify"]);
+      expect(quiet.stdout).not.toMatch(/^OK /m);
+      expect(quiet.stdout).toMatch(/check\(s\) passed, 0 failed/);
+      expect(quiet.stdout).toMatch(/Plannable verification passed/);
+
+      const verbose = await runPlannable(dir, ["verify", "--verbose"]);
+      expect(verbose.stdout).toMatch(/^OK MASTER_PLAN\.md exists$/m);
+    });
+  });
+
+  it("suggests the closest command for typos", async () => {
+    await withTempDir(async (dir) => {
+      await expect(runPlannable(dir, ["stats"])).rejects.toMatchObject({
+        stderr: expect.stringContaining('did you mean "status"?')
+      });
+    });
+  });
 });
