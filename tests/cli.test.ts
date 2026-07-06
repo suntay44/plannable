@@ -54,6 +54,7 @@ describe("Plannable CLI", () => {
       const next = await runPlannable(dir, ["run-next"]);
       expect(next.stdout).toMatch(/Next part: P1/);
       expect(next.stdout).toMatch(/Load only: plans\/PART1_PLAN\.ai\.md/);
+      expect(next.stdout).toMatch(/Context cost: ~\d+ tokens/);
       expect(next.stdout).toMatch(/^T:/m);
     });
   });

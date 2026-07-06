@@ -2,9 +2,24 @@
 
 Command-driven planning for AI coding agents.
 
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg) ![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20deps-0-success.svg) ![Release](https://img.shields.io/github/v/release/suntay44/Plannable)
+
 Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plus compressed, agent-readable part files (**PlannablePlan** `.ai.md` format). Agents load one part at a time — each part carries enough context about the whole masterplan to work alone — and nothing gets checked off without recorded evidence.
 
-Think [spec-kit](https://github.com/github/spec-kit), but the plan is split into compressed parts where each part knows its place in the masterplan.
+## Why Plannable (vs spec-kit)
+
+[spec-kit](https://github.com/github/spec-kit) is specification-first; Plannable is execution-first. Honest comparison:
+
+| | Plannable | spec-kit |
+| --- | --- | --- |
+| Agent context per step | One compressed `.ai.md` part with a built-in `CTX:` masterplan summary — `run-next` prints its token cost | Full spec + plan + tasks artifacts |
+| Completion honesty | Evidence-gated: `complete` refuses without recorded proof | Checklist-based |
+| State drift | Impossible by design — `PLAN_STATE.md` is regenerated from source-of-truth files | Manual consistency (`/analyze` helps) |
+| Prerequisites | Node 18+, zero runtime dependencies | Python, uv, per-agent setup |
+| Specification depth | Scenario drafts you enrich | Deeper: constitution, clarify, analyze |
+| Agent integrations | Claude Code, Codex, Cursor | 30+ agents |
+
+Pick spec-kit for heavyweight specification governance. Pick Plannable when you want an agent to execute a plan without context rot or unearned checkmarks.
 
 ## Use Cases
 
@@ -43,7 +58,7 @@ See [docs/INSTALL.md](docs/INSTALL.md) for CLI, Codex Desktop, Claude Code, and 
 
 ```bash
 plannable create "CRM"     # generate MASTER_PLAN.md + compressed part files
-plannable run-next         # print the next pending part (load only this)
+plannable run-next         # print the next pending part + its token cost (load only this)
 # ...implement the part...
 plannable evidence PART-001 "Contact creation works" --artifact "npm test"
 plannable complete PART-001
@@ -102,7 +117,7 @@ Full format reference: [docs/PLANNABLE_PLAN_SPEC.md](docs/PLANNABLE_PLAN_SPEC.md
 | Command | What it does |
 | --- | --- |
 | `plannable create "CRM"` | Generate a scenario-driven plan for any product idea |
-| `plannable run-next` | Print the next pending part (the only file an agent should load) |
+| `plannable run-next` | Print the next pending part and its estimated token cost (the only file an agent should load) |
 | `plannable status` | Show progress, grouped by masterplan phase |
 | `plannable evidence PART-001 "summary" --artifact "npm test"` | Record proof of completed work |
 | `plannable complete PART-001` | Check off a part — refuses without evidence |

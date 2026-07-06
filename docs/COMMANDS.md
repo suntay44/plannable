@@ -52,6 +52,7 @@ It prints:
 - scenario id
 - outcome
 - part file path
+- estimated token cost of loading the part
 - agent instruction to load only that part
 
 Use `--json` for machine-readable output.

@@ -2,12 +2,14 @@ import path from "node:path";
 import { readText } from "../core/filesystem.js";
 import { parseMasterPartStatuses } from "../core/master-plan.js";
 import { parseOptions } from "../core/options.js";
+import { estimateTokens } from "../core/plannable-plan.js";
 import { type PartStatus } from "../core/state.js";
 
 export type RunNextSummary = {
   next: PartStatus | null;
   instruction: string[];
   content?: string;
+  estimatedTokens?: number;
 };
 
 export async function getRunNextSummary(cwd: string, includeContent = true): Promise<RunNextSummary> {
@@ -30,7 +32,8 @@ export async function getRunNextSummary(cwd: string, includeContent = true): Pro
       "Implement only this part.",
       "Do not check off until evidence is written."
     ],
-    content
+    content,
+    estimatedTokens: content === undefined ? undefined : estimateTokens(content)
   };
 }
 
@@ -57,6 +60,9 @@ export async function runNextCommand(cwd: string, args: string[] = []): Promise<
   console.log(`Scenario: ${summary.next.scenarioId}`);
   console.log(`Outcome: ${summary.next.outcome}`);
   console.log(`Load only: ${summary.next.path}`);
+  if (summary.estimatedTokens !== undefined) {
+    console.log(`Context cost: ~${summary.estimatedTokens} tokens (this part is all the plan context needed)`);
+  }
   console.log("");
   console.log("Agent instruction:");
   for (const line of summary.instruction) {
