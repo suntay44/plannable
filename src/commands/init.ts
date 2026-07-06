@@ -3,6 +3,7 @@ import { writeText } from "../core/filesystem.js";
 
 export async function initCommand(cwd: string, args: string[]): Promise<void> {
   const overwrite = args.includes("--force");
+  const projectName = args.filter((arg) => !arg.startsWith("--")).join(" ").trim() || "Existing Project";
 
   await writeText(path.join(cwd, "MASTER_PLAN.md"), [
     "# MASTER_PLAN.md",
@@ -19,7 +20,7 @@ export async function initCommand(cwd: string, args: string[]): Promise<void> {
   await writeText(path.join(cwd, "PLAN_STATE.md"), [
     "# PLAN_STATE.md",
     "",
-    "Project: Existing Project",
+    `Project: ${projectName}`,
     `Created: ${new Date().toISOString()}`,
     "",
     "## Current Part",
@@ -37,7 +38,7 @@ export async function initCommand(cwd: string, args: string[]): Promise<void> {
   await writeText(path.join(cwd, "PLAN_EVIDENCE.md"), [
     "# PLAN_EVIDENCE.md",
     "",
-    "Project: Existing Project",
+    `Project: ${projectName}`,
     "",
     "## Evidence Log",
     "",

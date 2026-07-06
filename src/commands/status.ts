@@ -1,7 +1,6 @@
 import path from "node:path";
 import { readText } from "../core/filesystem.js";
-import { hasEvidenceForPart } from "../core/evidence.js";
-import { parseEvidencePartIds } from "../core/evidence.js";
+import { hasEvidenceForPart, parseEvidencePartIds } from "../core/evidence.js";
 import { parseMasterPartStatuses } from "../core/master-plan.js";
 import { parseOptions } from "../core/options.js";
 import { parseCurrentPartPath, parsePartStatuses } from "../core/state.js";
@@ -60,9 +59,9 @@ export async function getStatusSummary(cwd: string): Promise<StatusSummary> {
     currentPart: currentPartPath,
     nextPart: parts.find((part) => part.status === "pending")?.path ?? null,
     parts: parts.map((part) => {
-    const partLabel = `PART-${String(part.partNumber).padStart(3, "0")}`;
-    const statePart = stateParts.find((candidate) => candidate.partNumber === part.partNumber);
-    const evidenceStatus = hasEvidenceForPart(evidence, partLabel) || statePart?.evidence === "recorded" ? "recorded" : "pending";
+      const partLabel = `PART-${String(part.partNumber).padStart(3, "0")}`;
+      const statePart = stateParts.find((candidate) => candidate.partNumber === part.partNumber);
+      const evidenceStatus = hasEvidenceForPart(evidence, partLabel) || statePart?.evidence === "recorded" ? "recorded" : "pending";
       return { ...part, evidence: evidenceStatus };
     }),
     missingEvidence: missingEvidence.map((part) => part.partNumber),

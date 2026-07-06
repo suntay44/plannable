@@ -32,7 +32,11 @@ plannable create "backend API"
 
 ## `plannable init`
 
-Creates a default empty-ish Plannable scaffold for a generic product in the current directory.
+Creates a default empty-ish Plannable scaffold for a generic product in the current directory. Pass a name to label the project:
+
+```bash
+plannable init "Legacy Billing Service"
+```
 
 This is optional and advanced. It is for existing projects where you want blank Plannable files without generated scenarios. New users should start with `plannable create "<software plan>"`.
 
@@ -123,6 +127,8 @@ plannable repair
 plannable repair --dry-run
 plannable repair --json
 ```
+
+In `--json` output, `changed` means drift was found; `applied` means files were actually written (`false` under `--dry-run`).
 
 ## `plannable compress plan.md`
 

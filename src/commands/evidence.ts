@@ -30,6 +30,7 @@ export async function evidenceCommand(cwd: string, args: string[]): Promise<void
   ];
 
   const evidence = await readText(evidencePath);
+  const alreadyRecorded = hasEvidenceForPart(evidence, partId);
   const nextEvidence = appendEvidence(evidence, { partId, summary, artifacts });
   const nextMaster = markEvidenceRecordedInMaster(master, partNumberFromId(partId));
   const nextState = regenerateState(state, parseMasterPartStatuses(nextMaster), (partLabel) => hasEvidenceForPart(nextEvidence, partLabel));
@@ -39,5 +40,8 @@ export async function evidenceCommand(cwd: string, args: string[]): Promise<void
   await writeText(statePath, nextState, true);
 
   console.log(`Recorded evidence for ${partId}.`);
+  if (alreadyRecorded) {
+    console.log(`Note: ${partId} already had evidence; this entry was appended as additional evidence.`);
+  }
   console.log("Next: plannable complete " + partId);
 }

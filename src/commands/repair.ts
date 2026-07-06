@@ -8,6 +8,7 @@ import { regenerateState } from "../core/state.js";
 
 type RepairSummary = {
   changed: boolean;
+  applied: boolean;
   changes: string[];
 };
 
@@ -63,5 +64,5 @@ async function repairPlan(cwd: string, dryRun: boolean): Promise<RepairSummary> 
     await writeText(statePath, nextState, true);
   }
 
-  return { changed: changes.length > 0 && !dryRun, changes };
+  return { changed: changes.length > 0, applied: changes.length > 0 && !dryRun, changes };
 }

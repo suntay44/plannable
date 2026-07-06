@@ -430,4 +430,45 @@ describe("Plannable CLI", () => {
       expect(status.stdout).toMatch(/ {2}\[ \] Part 1:/);
     });
   });
+
+  it("evidence warns when a part already has recorded evidence", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["create", "CRM"]);
+
+      const first = await runPlannable(dir, ["evidence", "P1", "Contacts verified.", "--artifact", "npm test"]);
+      expect(first.stdout).not.toMatch(/already had evidence/);
+
+      const second = await runPlannable(dir, ["evidence", "P1", "Contacts re-verified.", "--artifact", "npm test"]);
+      expect(second.stdout).toMatch(/already had evidence/);
+    });
+  });
+
+  it("repair --dry-run reports drift without writing files", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["create", "backend API"]);
+
+      const statePath = path.join(dir, "PLAN_STATE.md");
+      const original = await readFile(statePath, "utf8");
+      await writeFile(statePath, original.replace("Next: plans/PART1_PLAN.ai.md", "Next: plans/PART9_PLAN.ai.md"), "utf8");
+
+      const dryRun = JSON.parse((await runPlannable(dir, ["repair", "--dry-run", "--json"])).stdout);
+      expect(dryRun.changed).toBe(true);
+      expect(dryRun.applied).toBe(false);
+      expect(dryRun.changes.join("\n")).toMatch(/regenerated PLAN_STATE\.md/);
+
+      const untouched = await readFile(statePath, "utf8");
+      expect(untouched).toMatch(/Next: plans\/PART9_PLAN\.ai\.md/);
+    });
+  });
+
+  it("init accepts a project name for blank files", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["init", "Legacy Billing Service"]);
+
+      const state = await readFile(path.join(dir, "PLAN_STATE.md"), "utf8");
+      const evidence = await readFile(path.join(dir, "PLAN_EVIDENCE.md"), "utf8");
+      expect(state).toMatch(/Project: Legacy Billing Service/);
+      expect(evidence).toMatch(/Project: Legacy Billing Service/);
+    });
+  });
 });

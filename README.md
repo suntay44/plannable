@@ -143,5 +143,7 @@ The workflow is the same everywhere: create → enrich the draft with product-sp
 - [docs/PLATFORM_SUPPORT.md](docs/PLATFORM_SUPPORT.md) — platform specifics
 - [examples/](examples/) — generated example projects (CRM, TODO app, restaurant homepage)
 - [docs/V1_ROADMAP.md](docs/V1_ROADMAP.md) — path to v1
+- [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, project layout, rules
+- [CHANGELOG.md](CHANGELOG.md) — release history
 
 MIT licensed.

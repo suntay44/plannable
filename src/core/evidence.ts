@@ -26,8 +26,9 @@ export function appendEvidence(content: string, entry: EvidenceEntry): string {
     artifactLines
   ].join("\n");
 
-  if (content.includes("No evidence recorded yet.")) {
-    return content.replace("No evidence recorded yet.", nextEntry);
+  const placeholder = /^[_*]*No evidence recorded( yet)?\.?[_*]*[ \t]*$/im;
+  if (placeholder.test(content)) {
+    return content.replace(placeholder, nextEntry);
   }
 
   return `${content.trimEnd()}\n\n${nextEntry}\n`;

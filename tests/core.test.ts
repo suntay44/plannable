@@ -9,6 +9,7 @@ import {
   normalizePartId,
   partNumberFromId
 } from "../src/core/progress.ts";
+import { appendEvidence } from "../src/core/evidence.ts";
 import { regenerateState } from "../src/core/state.ts";
 import {
   PLANNABLE_PLAN_HEADER,
@@ -106,6 +107,22 @@ describe("core plan helpers", () => {
 
     const oldName = validatePlannablePlan("@PlanPack v0.1\n\nID=PART-001");
     expect(oldName.errors).toContain("Uses old @PlanPack name.");
+  });
+
+  it("appendEvidence replaces hand-edited placeholder variants and appends otherwise", () => {
+    const entry = { partId: "PART-001", summary: "Login verified.", artifacts: ["npm test"] };
+
+    for (const placeholder of ["No evidence recorded yet.", "_No evidence recorded yet._", "No evidence recorded"]) {
+      const log = ["# PLAN_EVIDENCE.md", "", "## Evidence Log", "", placeholder].join("\n");
+      const next = appendEvidence(log, entry);
+      expect(next).toContain("### PART-001");
+      expect(next).not.toContain(placeholder);
+    }
+
+    const existing = ["# PLAN_EVIDENCE.md", "", "## Evidence Log", "", "### PART-000", "", "Setup done."].join("\n");
+    const appended = appendEvidence(existing, entry);
+    expect(appended).toContain("### PART-000");
+    expect(appended.indexOf("### PART-001")).toBeGreaterThan(appended.indexOf("### PART-000"));
   });
 
   it("compresses markdown into readable PlannablePlan format with context and token savings", () => {
