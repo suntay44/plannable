@@ -473,6 +473,22 @@ describe("Plannable CLI", () => {
     });
   });
 
+  it("init infers the project name from package.json or the directory", async () => {
+    await withTempDir(async (dir) => {
+      const pkgDir = path.join(dir, "with-pkg");
+      await mkdir(pkgDir);
+      await writeFile(path.join(pkgDir, "package.json"), JSON.stringify({ name: "billing-service" }), "utf8");
+      const withPkg = await runPlannable(pkgDir, ["init"]);
+      expect(withPkg.stdout).toMatch(/Initialized blank Plannable files for "billing-service"/);
+      expect(await readFile(path.join(pkgDir, "PLAN_STATE.md"), "utf8")).toMatch(/Project: billing-service/);
+
+      const bareDir = path.join(dir, "my-legacy-app");
+      await mkdir(bareDir);
+      await runPlannable(bareDir, ["init"]);
+      expect(await readFile(path.join(bareDir, "PLAN_STATE.md"), "utf8")).toMatch(/Project: my-legacy-app/);
+    });
+  });
+
   it("evidence and complete support --json output", async () => {
     await withTempDir(async (dir) => {
       await runPlannable(dir, ["create", "CRM"]);

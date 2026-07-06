@@ -11,7 +11,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 - Evidence placeholder matching tolerates hand-edited variants (italics, missing period, trailing whitespace).
 
 ### Added
-- `plannable init` accepts a project name: `plannable init "Legacy Billing Service"`.
+- `plannable init` labels the project automatically from `package.json` or the directory name; pass a name only to override (`plannable init "Legacy Billing Service"`).
 - `--json` output for `plannable evidence` and `plannable complete` — the whole workflow loop is now machine-readable.
 - `plannable verify` prints only failures, warnings, and a summary by default; `--verbose` lists every passing check.
 - Unknown commands suggest the closest match ("did you mean \"status\"?").

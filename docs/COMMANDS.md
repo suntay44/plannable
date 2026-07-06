@@ -32,13 +32,19 @@ plannable create "backend API"
 
 ## `plannable init`
 
-Creates a default empty-ish Plannable scaffold for a generic product in the current directory. Pass a name to label the project:
+Creates blank Plannable files in an existing project — no generated scenarios. The project label is picked up automatically from `package.json` (`name`) or the directory name, so this is usually all you need:
+
+```bash
+plannable init
+```
+
+Pass a name only to override the inferred label:
 
 ```bash
 plannable init "Legacy Billing Service"
 ```
 
-This is optional and advanced. It is for existing projects where you want blank Plannable files without generated scenarios. New users should start with `plannable create "<software plan>"`.
+This is optional and advanced. New users should start with `plannable create "<software plan>"`.
 
 ## `plannable run-next`
 
