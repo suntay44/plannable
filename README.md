@@ -1,4 +1,4 @@
-# Plannable
+<img width="1983" height="793" alt="ChatGPT Image Jun 10, 2026, 09_27_46 PM" src="https://github.com/user-attachments/assets/35f7b793-b421-4dd5-8a47-79363f34ce98" />
 
 Command-driven planning for AI coding agents.
 
