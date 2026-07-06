@@ -12,7 +12,7 @@ Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plu
 
 | | Plannable | spec-kit |
 | --- | --- | --- |
-| Agent context per step | One compressed `.ai.md` part with a built-in `CTX:` masterplan summary — `run-next` prints its token cost | Full spec + plan + tasks artifacts |
+| Agent context per step | **~332 tokens** — one compressed `.ai.md` part with a built-in `CTX:` masterplan summary | **~4,969 tokens** (lower bound) — spec + plan + tasks + constitution ([methodology](docs/BENCHMARK.md)) |
 | Completion honesty | Evidence-gated: `complete` refuses without recorded proof | Checklist-based |
 | State drift | Impossible by design — `PLAN_STATE.md` is regenerated from source-of-truth files | Manual consistency (`/analyze` helps) |
 | Prerequisites | Node 18+, zero runtime dependencies | Python, uv, per-agent setup |
@@ -152,6 +152,7 @@ The workflow is the same everywhere: create → enrich the draft with product-sp
 
 ## More
 
+- [docs/BENCHMARK.md](docs/BENCHMARK.md) — reproducible token benchmark vs spec-kit
 - [docs/WORKFLOWS.md](docs/WORKFLOWS.md) — end-to-end workflows
 - [docs/README_CLAIMS_AUDIT.md](docs/README_CLAIMS_AUDIT.md) — README claim-by-claim implementation check
 - [docs/COMPLETION_RULES.md](docs/COMPLETION_RULES.md) — what "done" requires
