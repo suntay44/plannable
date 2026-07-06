@@ -1,12 +1,23 @@
+<div align="center">
 <img width="1983" height="793" alt="Plannable" src="https://github.com/user-attachments/assets/35f7b793-b421-4dd5-8a47-79363f34ce98" />
 
-# Plannable
+### ⭐ Stars are appreciated!
 
-Command-driven planning for AI coding agents.
+**Spec & Command driven planning for AI coding agents.**
+
+Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plus compressed, agent-readable part files (**PlannablePlan** `.ai.md` format). Agents load one part at a time — each part carries enough context about the whole masterplan to work alone — and nothing gets checked off without recorded evidence.
+<br />
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg) ![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20deps-0-success.svg) ![Release](https://img.shields.io/github/v/release/suntay44/Plannable)
 
-Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plus compressed, agent-readable part files (**PlannablePlan** `.ai.md` format). Agents load one part at a time — each part carries enough context about the whole masterplan to work alone — and nothing gets checked off without recorded evidence.
+
+<br />
+</div>
+
+
+
+
+
 
 ## Why Plannable (vs spec-kit)
 
