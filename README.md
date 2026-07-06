@@ -1,4 +1,6 @@
-<img width="1983" height="793" alt="ChatGPT Image Jun 10, 2026, 09_27_46 PM" src="https://github.com/user-attachments/assets/35f7b793-b421-4dd5-8a47-79363f34ce98" />
+<img width="1983" height="793" alt="Plannable" src="https://github.com/user-attachments/assets/35f7b793-b421-4dd5-8a47-79363f34ce98" />
+
+# Plannable
 
 Command-driven planning for AI coding agents.
 
@@ -8,7 +10,7 @@ Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plu
 
 ## Why Plannable (vs spec-kit)
 
-[spec-kit](https://github.com/github/spec-kit) is specification-first; Plannable is execution-first. Honest comparison:
+[spec-kit](https://github.com/github/spec-kit) is specification-first; Plannable is execution-first.
 
 | | Plannable | spec-kit |
 | --- | --- | --- |
@@ -21,29 +23,23 @@ Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plu
 
 Pick spec-kit for heavyweight specification governance. Pick Plannable when you want an agent to execute a plan without context rot or unearned checkmarks.
 
-## Use Cases
+## When to Use It
 
-- **Greenfield projects** — turn a product idea into a phased, scenario-driven plan in seconds
-- **AI-assisted development** — agents implement one part at a time without losing the big picture
-- **Multi-phase features** — break a complex feature into ordered parts with explicit hand-off context
-- **Audit trails** — every completed part has recorded evidence before it can be checked off
-- **Solo or team** — humans read `MASTER_PLAN.md`; agents read one `.ai.md` part at a time
+Long agent sessions fail in predictable ways: the plan is too big to keep in context, the agent drifts from it mid-implementation, and by the end it has checked off work it never finished. Plannable is planning built to survive execution — hence the name. The plan is split into parts small enough to actually hold in context, each part carries the whole arc with it, and no checkbox moves without proof.
+
+Reach for it when you're starting from a product idea and want a working first plan in seconds instead of a blank page. When a feature spans multiple agent sessions and each session has to pick up exactly where the last one stopped. When you come back to review an agent's work and want the checkmarks to mean something — every completed part points to evidence naming the files, checks, and notes that prove it.
 
 ## Install
 
 > Requires Node.js 18+
 
 ```bash
-npm install -g plannable
+git clone https://github.com/suntay44/Plannable.git
+cd Plannable && npm install && npm run build && npm link
 plannable --version
 ```
 
-Before npm publish, install from source:
-
-```bash
-git clone https://github.com/suntay44/Plannable.git
-cd Plannable && npm install && npm run build && npm link
-```
+(`npm install -g plannable` will work once the package is published to npm.)
 
 You can also ask your agent:
 
