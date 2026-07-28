@@ -3,9 +3,36 @@ export type ParsedOptions = {
   values: Record<string, string[]>;
 };
 
+export type OptionSchema = Record<string, "boolean" | "value">;
+
 // Flags that never take a value, so they can appear anywhere without
 // swallowing the next argument.
 const BOOLEAN_FLAGS = new Set(["json", "force", "dry-run", "verbose"]);
+
+export function assertKnownOptions(command: string, args: string[], schema: OptionSchema): void {
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === "--") {
+      return;
+    }
+    if (!arg.startsWith("--")) {
+      continue;
+    }
+
+    const key = arg.slice(2);
+    const kind = schema[key];
+    if (!kind) {
+      throw new Error(`Unknown option for ${command}: ${arg}`);
+    }
+    if (kind === "value") {
+      const next = args[index + 1];
+      if (!next || next.startsWith("--")) {
+        throw new Error(`Option ${arg} requires a value.`);
+      }
+      index += 1;
+    }
+  }
+}
 
 export function parseOptions(args: string[]): ParsedOptions {
   const positional: string[] = [];
@@ -13,6 +40,10 @@ export function parseOptions(args: string[]): ParsedOptions {
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
+    if (arg === "--") {
+      positional.push(...args.slice(index + 1));
+      break;
+    }
     if (arg.startsWith("--")) {
       const key = arg.slice(2);
       const next = args[index + 1];

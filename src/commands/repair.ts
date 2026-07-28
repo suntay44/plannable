@@ -1,9 +1,8 @@
-import path from "node:path";
 import { hasEvidenceForPart } from "../core/evidence.js";
-import { readText, writeText } from "../core/filesystem.js";
+import { readProjectText, writeProjectText } from "../core/filesystem.js";
 import { parseMasterPartStatuses } from "../core/master-plan.js";
 import { parseOptions } from "../core/options.js";
-import { markEvidenceRecordedInMaster } from "../core/progress.js";
+import { setEvidenceStatusInMaster } from "../core/progress.js";
 import { regenerateState } from "../core/state.js";
 
 type RepairSummary = {
@@ -34,34 +33,31 @@ export async function repairCommand(cwd: string, args: string[] = []): Promise<v
 }
 
 async function repairPlan(cwd: string, dryRun: boolean): Promise<RepairSummary> {
-  const masterPath = path.join(cwd, "MASTER_PLAN.md");
-  const statePath = path.join(cwd, "PLAN_STATE.md");
-  const evidencePath = path.join(cwd, "PLAN_EVIDENCE.md");
-
-  let master = await readText(masterPath);
-  const state = await readText(statePath);
-  const evidence = await readText(evidencePath);
+  let master = await readProjectText(cwd, "MASTER_PLAN.md");
+  const state = await readProjectText(cwd, "PLAN_STATE.md");
+  const evidence = await readProjectText(cwd, "PLAN_EVIDENCE.md");
   const changes: string[] = [];
 
   for (const part of parseMasterPartStatuses(master)) {
     const partId = `PART-${String(part.partNumber).padStart(3, "0")}`;
-    if (hasEvidenceForPart(evidence, partId)) {
-      const masterBefore = master;
-      master = markEvidenceRecordedInMaster(master, part.partNumber);
-      if (master !== masterBefore) {
-        changes.push(`marked MASTER_PLAN.md evidence recorded for ${partId}`);
-      }
+    const evidenceStatus = hasEvidenceForPart(evidence, partId) ? "recorded" : "pending";
+    const masterBefore = master;
+    master = setEvidenceStatusInMaster(master, part.partNumber, evidenceStatus);
+    if (master !== masterBefore) {
+      changes.push(`marked MASTER_PLAN.md evidence ${evidenceStatus} for ${partId}`);
     }
   }
 
-  const nextState = regenerateState(state, parseMasterPartStatuses(master), (partLabel) => hasEvidenceForPart(evidence, partLabel));
+  const nextState = regenerateState(state, parseMasterPartStatuses(master), (partLabel) =>
+    hasEvidenceForPart(evidence, partLabel)
+  );
   if (nextState !== state) {
     changes.push("regenerated PLAN_STATE.md from MASTER_PLAN.md and PLAN_EVIDENCE.md");
   }
 
   if (!dryRun && changes.length > 0) {
-    await writeText(masterPath, master, true);
-    await writeText(statePath, nextState, true);
+    await writeProjectText(cwd, "MASTER_PLAN.md", master, true);
+    await writeProjectText(cwd, "PLAN_STATE.md", nextState, true);
   }
 
   return { changed: changes.length > 0, applied: changes.length > 0 && !dryRun, changes };

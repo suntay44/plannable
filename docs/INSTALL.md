@@ -9,7 +9,7 @@ Plannable is a skill, not a hosted plugin. In desktop agent apps, "install the p
 
 ## Install the CLI from npm
 
-Requires Node.js 18+.
+Requires Node.js 22+.
 
 ```bash
 npm install -g plannable

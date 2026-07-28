@@ -6,11 +6,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 ## [Unreleased]
 
 ### Fixed
+- Project-local reads and writes now reject traversal and symbolic-link escapes; overwrites use atomic replacement.
+- Verification now detects drift between master-plan scenarios/outcomes and generated state, including stale evidence markers.
+- Evidence only unlocks completion when it includes a substantive artifact, check, file, note, or explicit unavailable reason.
 - `plannable evidence` now notes when a part already had evidence instead of silently appending a duplicate entry.
 - `plannable repair --dry-run --json` now reports `changed: true` when drift is found; a new `applied` field says whether files were written.
 - Evidence placeholder matching tolerates hand-edited variants (italics, missing period, trailing whitespace).
 
 ### Added
+- CI across Node.js 22, 24, and 26 on Linux plus Node.js 24 on macOS and Windows.
+- Formatting, linting, package-content validation, Dependabot, and a provenance-ready npm release workflow.
+- Community health files for security reports, support, conduct, issues, and pull requests.
+- Actionable errors for unknown options and value-taking options with no value.
+- `--unavailable` evidence for explicitly documenting a verification step that cannot run.
 - `plannable init` labels the project automatically from `package.json` or the directory name; pass a name only to override (`plannable init "Legacy Billing Service"`).
 - `--json` output for `plannable evidence` and `plannable complete` — the whole workflow loop is now machine-readable.
 - `plannable verify` prints only failures, warnings, and a summary by default; `--verbose` lists every passing check.
@@ -19,6 +27,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 - CONTRIBUTING.md and this changelog.
 
 ### Changed
+- The supported runtime is now Node.js 22 or newer.
+- Scenario hints are organized into focused domain modules.
 - `plannable create` in a directory that already has a plan explains `--force` instead of printing a raw filesystem error.
 - `plannable complete` points to `plannable run-next` (or `verify` when the plan is done) instead of `status`.
 - Boolean flags (`--json`, `--force`, `--dry-run`, `--verbose`) can appear anywhere in the argument list without swallowing the next argument.

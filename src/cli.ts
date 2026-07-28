@@ -13,6 +13,7 @@ import { repairCommand } from "./commands/repair.js";
 import { runNextCommand } from "./commands/run-next.js";
 import { statusCommand } from "./commands/status.js";
 import { verifyCommand } from "./commands/verify.js";
+import { assertKnownOptions, type OptionSchema } from "./core/options.js";
 
 async function cliVersion(): Promise<string> {
   const packagePath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json");
@@ -41,6 +42,7 @@ Options:
   --verbose   verify: list every passing check, not just failures
   --force     create/init: overwrite existing plan files
   --dry-run   repair: report drift without writing files
+  --unavailable <reason>  evidence/complete: explain why a verification step could not run
 
 Platform launchers:
   Terminal: plannable create "CRM"
@@ -52,6 +54,11 @@ Platform launchers:
 async function main(argv: string[]): Promise<void> {
   const [command, ...args] = argv;
   const cwd = process.cwd();
+
+  const optionSchema = command ? COMMAND_OPTION_SCHEMAS[command] : undefined;
+  if (optionSchema) {
+    assertKnownOptions(command, args, optionSchema);
+  }
 
   switch (command) {
     case "create":
@@ -104,7 +111,48 @@ async function main(argv: string[]): Promise<void> {
   }
 }
 
-const COMMANDS = ["create", "init", "run-next", "status", "verify", "evidence", "complete", "doctor", "repair", "compress", "expand"];
+const COMMANDS = [
+  "create",
+  "init",
+  "run-next",
+  "status",
+  "verify",
+  "evidence",
+  "complete",
+  "doctor",
+  "repair",
+  "compress",
+  "expand"
+];
+
+const COMMAND_OPTION_SCHEMAS: Record<string, OptionSchema> = {
+  create: { force: "boolean" },
+  init: { force: "boolean" },
+  "run-next": { json: "boolean" },
+  status: { json: "boolean" },
+  verify: { json: "boolean", verbose: "boolean" },
+  evidence: {
+    json: "boolean",
+    artifact: "value",
+    file: "value",
+    check: "value",
+    note: "value",
+    unavailable: "value"
+  },
+  complete: {
+    json: "boolean",
+    summary: "value",
+    artifact: "value",
+    file: "value",
+    check: "value",
+    note: "value",
+    unavailable: "value"
+  },
+  doctor: { json: "boolean" },
+  repair: { json: "boolean", "dry-run": "boolean" },
+  compress: {},
+  expand: {}
+};
 
 function closestCommand(input: string): string | undefined {
   let best: { command: string; distance: number } | undefined;

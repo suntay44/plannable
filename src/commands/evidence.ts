@@ -1,6 +1,5 @@
-import path from "node:path";
 import { appendEvidence, hasEvidenceForPart } from "../core/evidence.js";
-import { readText, writeText } from "../core/filesystem.js";
+import { readProjectText, writeProjectText } from "../core/filesystem.js";
 import { parseMasterPartStatuses } from "../core/master-plan.js";
 import { allValues, parseOptions } from "../core/options.js";
 import { findPartById, markEvidenceRecordedInMaster, normalizePartId, partNumberFromId } from "../core/progress.js";
@@ -15,32 +14,38 @@ export async function evidenceCommand(cwd: string, args: string[]): Promise<void
 
   const partId = normalizePartId(partArg);
   const summary = summaryParts.join(" ").trim();
-  const masterPath = path.join(cwd, "MASTER_PLAN.md");
-  const statePath = path.join(cwd, "PLAN_STATE.md");
-  const evidencePath = path.join(cwd, "PLAN_EVIDENCE.md");
-  const master = await readText(masterPath);
-  const state = await readText(statePath);
+  const master = await readProjectText(cwd, "MASTER_PLAN.md");
+  const state = await readProjectText(cwd, "PLAN_STATE.md");
   findPartById(master, partId);
 
   const artifacts = [
     ...allValues(options, "artifact"),
     ...allValues(options, "file").map((value) => `Changed file: ${value}`),
     ...allValues(options, "check").map((value) => `Check: ${value}`),
-    ...allValues(options, "note").map((value) => `Note: ${value}`)
+    ...allValues(options, "note").map((value) => `Note: ${value}`),
+    ...allValues(options, "unavailable").map((value) => `Unavailable: ${value}`)
   ];
 
-  const evidence = await readText(evidencePath);
+  const evidence = await readProjectText(cwd, "PLAN_EVIDENCE.md");
   const alreadyRecorded = hasEvidenceForPart(evidence, partId);
   const nextEvidence = appendEvidence(evidence, { partId, summary, artifacts });
   const nextMaster = markEvidenceRecordedInMaster(master, partNumberFromId(partId));
-  const nextState = regenerateState(state, parseMasterPartStatuses(nextMaster), (partLabel) => hasEvidenceForPart(nextEvidence, partLabel));
+  const nextState = regenerateState(state, parseMasterPartStatuses(nextMaster), (partLabel) =>
+    hasEvidenceForPart(nextEvidence, partLabel)
+  );
 
-  await writeText(evidencePath, nextEvidence, true);
-  await writeText(masterPath, nextMaster, true);
-  await writeText(statePath, nextState, true);
+  await writeProjectText(cwd, "PLAN_EVIDENCE.md", nextEvidence, true);
+  await writeProjectText(cwd, "MASTER_PLAN.md", nextMaster, true);
+  await writeProjectText(cwd, "PLAN_STATE.md", nextState, true);
 
   if (options.values.json) {
-    console.log(JSON.stringify({ ok: true, partId, summary, artifacts, alreadyRecorded, next: `plannable complete ${partId}` }, null, 2));
+    console.log(
+      JSON.stringify(
+        { ok: true, partId, summary, artifacts, alreadyRecorded, next: `plannable complete ${partId}` },
+        null,
+        2
+      )
+    );
     return;
   }
 

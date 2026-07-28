@@ -1,0 +1,42 @@
+name: Bug report
+description: Report reproducible Plannable behavior that does not match the documentation.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Plannable. Remove secrets and private plan content before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: Plannable version
+      placeholder: Output from plannable --version
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version and operating system
+      placeholder: Node 24.4.0 on macOS 15
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Include the command and a minimal plan when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true

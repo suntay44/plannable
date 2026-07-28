@@ -4,21 +4,20 @@ Thanks for helping! Plannable is a zero-runtime-dependency TypeScript CLI — pl
 
 ## Setup
 
-Requires Node.js 18+.
+Requires Node.js 22+.
 
 ```bash
 git clone https://github.com/suntay44/Plannable.git
 cd Plannable
 npm install
-npm run build
-npm test
+npm run check
 ```
 
 ## Development loop
 
 ```bash
 npm run dev -- create "CRM"   # run the CLI from source
-npm run typecheck             # strict TypeScript, no emit
+npm run check                 # format, lint, typecheck, test, build, package validation
 npm test                      # vitest: CLI integration + core unit tests
 ```
 
@@ -44,5 +43,7 @@ tests/            cli.test.ts (end-to-end in temp dirs), core.test.ts (unit)
 ## Submitting a change
 
 1. Fork, branch from `main`.
-2. Make the change with tests; run `npm run typecheck && npm test`.
+2. Make the change with tests; run `npm run check`.
 3. Open a PR describing what changed and why. Update CHANGELOG.md under `[Unreleased]`.
+
+Maintainers should follow [docs/RELEASING.md](docs/RELEASING.md) for releases.

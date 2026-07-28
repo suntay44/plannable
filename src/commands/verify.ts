@@ -1,5 +1,4 @@
-import path from "node:path";
-import { pathExists, readText } from "../core/filesystem.js";
+import { pathExists, readProjectText, resolveProjectPath } from "../core/filesystem.js";
 import { hasEvidenceForPart, parseEvidencePartIds } from "../core/evidence.js";
 import { parseMasterPartStatuses } from "../core/master-plan.js";
 import { parseOptions } from "../core/options.js";
@@ -26,22 +25,22 @@ export async function getVerifySummary(cwd: string): Promise<VerifySummary> {
 
   for (const item of required) {
     checks.push({
-      ok: await pathExists(path.join(cwd, item)),
+      ok: await pathExists(resolveProjectPath(cwd, item)),
       message: `${item} exists`
     });
   }
 
-  const statePath = path.join(cwd, "PLAN_STATE.md");
-  if (!await pathExists(statePath)) {
+  const statePath = resolveProjectPath(cwd, "PLAN_STATE.md");
+  if (!(await pathExists(statePath))) {
     const failedCount = checks.filter((check) => !check.ok).length;
     return { ok: false, failedCount, checks, warnings };
   }
 
-  const masterPath = path.join(cwd, "MASTER_PLAN.md");
-  const evidencePath = path.join(cwd, "PLAN_EVIDENCE.md");
-  const state = await readText(statePath);
-  const master = await pathExists(masterPath) ? await readText(masterPath) : "";
-  const evidence = await pathExists(evidencePath) ? await readText(evidencePath) : "";
+  const masterPath = resolveProjectPath(cwd, "MASTER_PLAN.md");
+  const evidencePath = resolveProjectPath(cwd, "PLAN_EVIDENCE.md");
+  const state = await readProjectText(cwd, "PLAN_STATE.md");
+  const master = (await pathExists(masterPath)) ? await readProjectText(cwd, "MASTER_PLAN.md") : "";
+  const evidence = (await pathExists(evidencePath)) ? await readProjectText(cwd, "PLAN_EVIDENCE.md") : "";
   const parts = parseMasterPartStatuses(master);
   const stateParts = parsePartStatuses(state);
   const nextUnchecked = parts.find((part) => part.status === "pending");
@@ -65,12 +64,16 @@ export async function getVerifySummary(cwd: string): Promise<VerifySummary> {
   });
 
   for (const part of parts) {
-    const partPath = path.join(cwd, part.path);
-    const exists = await pathExists(partPath);
-    checks.push({ ok: exists, message: `${part.path} exists` });
+    let content: string | undefined;
+    try {
+      content = await readProjectText(cwd, part.path);
+      checks.push({ ok: true, message: `${part.path} exists inside the project` });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      checks.push({ ok: false, message: `${part.path} is a readable project file: ${message}` });
+    }
 
-    if (exists) {
-      const content = await readText(partPath);
+    if (content !== undefined) {
       const summary = parsePlanSummary(content);
       const validation = validatePlannablePlan(content);
       checks.push({
@@ -99,22 +102,52 @@ export async function getVerifySummary(cwd: string): Promise<VerifySummary> {
         warnings.push(`${part.path}: ${warning}`);
       }
       for (const marker of findGenericPlanMarkers(content)) {
-        warnings.push(`${part.path}: contains generic draft wording "${marker}" — enrich with product-specific scenarios before implementing.`);
+        warnings.push(
+          `${part.path}: contains generic draft wording "${marker}" — enrich with product-specific scenarios before implementing.`
+        );
       }
     }
 
-    const masterStatus = masterPartStatus(master, part.partNumber);
-    if (masterStatus) {
+    const statePart = stateParts.find((candidate) => candidate.partNumber === part.partNumber);
+    checks.push({
+      ok: Boolean(statePart),
+      message: `PLAN_STATE.md contains Part ${part.partNumber}`
+    });
+    if (statePart) {
       checks.push({
-        ok: masterStatus === part.status,
+        ok: statePart.status === part.status,
         message: `MASTER_PLAN.md checkbox matches PLAN_STATE.md for Part ${part.partNumber}`
+      });
+      checks.push({
+        ok: statePart.path === part.path,
+        message: `MASTER_PLAN.md path matches PLAN_STATE.md for Part ${part.partNumber}`
+      });
+      checks.push({
+        ok: statePart.scenarioId === part.scenarioId,
+        message: `MASTER_PLAN.md scenario matches PLAN_STATE.md for Part ${part.partNumber}`
+      });
+      checks.push({
+        ok: statePart.outcome === part.outcome,
+        message: `MASTER_PLAN.md outcome matches PLAN_STATE.md for Part ${part.partNumber}`
+      });
+    }
+
+    const partLabel = `PART-${String(part.partNumber).padStart(3, "0")}`;
+    const evidenceExists = hasEvidenceForPart(evidence, partLabel);
+    checks.push({
+      ok: part.evidence === (evidenceExists ? "recorded" : "pending"),
+      message: `MASTER_PLAN.md evidence marker matches PLAN_EVIDENCE.md for Part ${part.partNumber}`
+    });
+    if (statePart) {
+      checks.push({
+        ok: statePart.evidence === (evidenceExists ? "recorded" : "pending"),
+        message: `PLAN_STATE.md evidence marker matches PLAN_EVIDENCE.md for Part ${part.partNumber}`
       });
     }
 
     if (part.status === "complete") {
-      const partLabel = `PART-${String(part.partNumber).padStart(3, "0")}`;
       checks.push({
-        ok: hasEvidenceForPart(evidence, partLabel),
+        ok: evidenceExists,
         message: `completed Part ${part.partNumber} has recorded evidence`
       });
     }
@@ -129,7 +162,9 @@ export async function getVerifySummary(cwd: string): Promise<VerifySummary> {
   }
 
   for (const marker of findGenericPlanMarkers(master)) {
-    warnings.push(`MASTER_PLAN.md: contains generic draft wording "${marker}" — enrich with product-specific scenarios before implementing.`);
+    warnings.push(
+      `MASTER_PLAN.md: contains generic draft wording "${marker}" — enrich with product-specific scenarios before implementing.`
+    );
   }
 
   const failed = checks.filter((check) => !check.ok);
@@ -155,7 +190,9 @@ export async function verifyCommand(cwd: string, args: string[] = []): Promise<v
   }
 
   const passedCount = summary.checks.length - summary.failedCount;
-  console.log(`${passedCount} check(s) passed, ${summary.failedCount} failed.${verbose ? "" : " Use --verbose to list every check."}`);
+  console.log(
+    `${passedCount} check(s) passed, ${summary.failedCount} failed.${verbose ? "" : " Use --verbose to list every check."}`
+  );
 
   if (!summary.ok) {
     throw new Error(`Plannable verification failed: ${summary.failedCount} issue(s).`);
@@ -171,13 +208,4 @@ function printChecks(checks: Check[], verbose: boolean): void {
       console.log(`${check.ok ? "OK" : "FAIL"} ${check.message}`);
     }
   }
-}
-
-function masterPartStatus(masterContent: string, partNumber: number): "pending" | "complete" | undefined {
-  const match = masterContent.match(new RegExp(`^- \\[( |x|X)\\] Part ${partNumber}:`, "m"));
-  if (!match) {
-    return undefined;
-  }
-
-  return match[1].toLowerCase() === "x" ? "complete" : "pending";
 }

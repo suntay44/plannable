@@ -9,17 +9,25 @@
   "files": [
     "dist",
     "templates",
-    ".agents",
-    ".codex",
-    ".claude",
-    ".cursor",
+    ".agents/skills/plannable",
+    ".codex/skills/plannable",
+    ".claude/skills/plannable",
+    ".cursor/skills/plannable",
+    ".cursor/commands",
+    ".cursor/rules",
     "docs",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run package:check",
     "dev": "tsx src/cli.ts",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{js,ts,json}\" \".github/**/*.{yml,yaml}\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{js,ts,json}\" \".github/**/*.{yml,yaml}\"",
+    "lint": "eslint src tests scripts eslint.config.js vitest.config.ts",
+    "package:check": "node scripts/check-package.mjs",
+    "prepack": "npm run build",
     "start": "node dist/cli.js",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -27,7 +35,13 @@
   },
   "keywords": [
     "ai-agents",
+    "agent-skills",
+    "ai-coding-agents",
+    "claude-code",
     "planning",
+    "implementation-planning",
+    "developer-tools",
+    "evidence-gated",
     "cli",
     "codex",
     "claude",
@@ -36,13 +50,20 @@
   "author": "Christian Patrick Suntay <xtiansun@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.14.10",
-    "tsx": "^4.16.2",
-    "typescript": "^5.5.3",
-    "vitest": "^4.1.8"
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.1",
+    "eslint": "^10.8.0",
+    "prettier": "^3.9.6",
+    "tsx": "^4.23.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^4.1.10"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "repository": {
     "type": "git",

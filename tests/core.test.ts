@@ -1,15 +1,12 @@
-import { readFile } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseMasterPartStatuses } from "../src/core/master-plan.ts";
 import { firstValue, allValues, parseOptions } from "../src/core/options.ts";
-import {
-  findPartById,
-  markPartCompleteInMaster,
-  normalizePartId,
-  partNumberFromId
-} from "../src/core/progress.ts";
-import { appendEvidence } from "../src/core/evidence.ts";
+import { findPartById, markPartCompleteInMaster, normalizePartId, partNumberFromId } from "../src/core/progress.ts";
+import { appendEvidence, hasEvidenceForPart } from "../src/core/evidence.ts";
+import { readProjectText, writeProjectText } from "../src/core/filesystem.ts";
 import { regenerateState } from "../src/core/state.ts";
 import {
   PLANNABLE_PLAN_HEADER,
@@ -64,14 +61,9 @@ describe("core plan helpers", () => {
   it("regenerates PLAN_STATE.md from master status plus evidence", () => {
     const completedMaster = markPartCompleteInMaster(sampleMaster(), "P1");
     const state = regenerateState(
-      [
-        "# PLAN_STATE.md",
-        "",
-        "Project: CRM",
-        "Created: 2026-06-11T00:00:00.000Z"
-      ].join("\n"),
+      ["# PLAN_STATE.md", "", "Project: CRM", "Created: 2026-06-11T00:00:00.000Z"].join("\n"),
       parseMasterPartStatuses(completedMaster),
-      (partLabel) => partLabel === "PART-002"
+      (partLabel) => partLabel === "PART-001"
     );
 
     expect(state).toContain("Project: CRM");
@@ -82,15 +74,7 @@ describe("core plan helpers", () => {
   });
 
   it("parses repeated CLI flags and boolean options", () => {
-    const options = parseOptions([
-      "evidence",
-      "P1",
-      "--artifact",
-      "npm test",
-      "--artifact",
-      "npm run build",
-      "--json"
-    ]);
+    const options = parseOptions(["evidence", "P1", "--artifact", "npm test", "--artifact", "npm run build", "--json"]);
 
     expect(options.positional).toEqual(["evidence", "P1"]);
     expect(firstValue(options, "artifact")).toBe("npm test");
@@ -133,6 +117,66 @@ describe("core plan helpers", () => {
     expect(appended).toContain("### PART-000");
     expect(appended.indexOf("### PART-001")).toBeGreaterThan(appended.indexOf("### PART-000"));
   });
+
+  it("requires substantive evidence instead of accepting a heading or pending verification", () => {
+    expect(hasEvidenceForPart("### PART-001\n\nImplemented.", "PART-001")).toBe(false);
+    expect(
+      hasEvidenceForPart(
+        ["### PART-001", "", "Implemented.", "", "Artifacts:", "- Manual verification pending"].join("\n"),
+        "PART-001"
+      )
+    ).toBe(false);
+    expect(() =>
+      appendEvidence("# PLAN_EVIDENCE.md", {
+        partId: "PART-001",
+        summary: "Implemented.",
+        artifacts: []
+      })
+    ).toThrow(/requires at least one/);
+    expect(
+      hasEvidenceForPart(
+        ["### PART-001", "", "Implemented.", "", "Artifacts:", "- Check: npm test"].join("\n"),
+        "PART-001"
+      )
+    ).toBe(true);
+  });
+
+  it.skipIf(process.platform === "win32")("confines project reads and refuses symbolic-link writes", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "plannable-filesystem-"));
+    try {
+      const project = path.join(root, "project");
+      await writeFile(path.join(root, "outside.md"), "outside", "utf8");
+      await writeProjectText(project, "inside.md", "inside");
+      await expect(readProjectText(project, "../outside.md")).rejects.toThrow(/escapes the project root/);
+
+      await symlink(path.join(root, "outside.md"), path.join(project, "linked.md"));
+      await expect(writeProjectText(project, "linked.md", "changed", true)).rejects.toThrow(/symbolic link/);
+      expect(await readFile(path.join(root, "outside.md"), "utf8")).toBe("outside");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it.skipIf(process.platform === "win32")(
+    "does not create directories through an intermediate symbolic link",
+    async () => {
+      const root = await mkdtemp(path.join(tmpdir(), "plannable-parent-link-"));
+      try {
+        const project = path.join(root, "project");
+        const outside = path.join(root, "outside");
+        await writeProjectText(project, "inside.md", "inside");
+        await writeProjectText(outside, "existing.md", "outside");
+        await symlink(outside, path.join(project, "linked"));
+
+        await expect(writeProjectText(project, "linked/new/file.md", "unsafe", true)).rejects.toThrow(
+          /symbolic link directory/
+        );
+        await expect(access(path.join(outside, "new"))).rejects.toMatchObject({ code: "ENOENT" });
+      } finally {
+        await rm(root, { recursive: true, force: true });
+      }
+    }
+  );
 
   it("compresses markdown into readable PlannablePlan format with context and token savings", () => {
     const source = [

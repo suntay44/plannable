@@ -4,21 +4,20 @@ import { type PartStatus } from "./state.js";
 
 function renderScenarios(model: PlanModel): string {
   return model.scenarios
-    .map((scenario) => [
-      `### ${scenario.id}: ${scenario.title}`,
-      `Outcome: ${scenario.outcome}`
-    ].join("\n"))
+    .map((scenario) => [`### ${scenario.id}: ${scenario.title}`, `Outcome: ${scenario.outcome}`].join("\n"))
     .join("\n\n");
 }
 
 function renderParts(model: PlanModel): string {
   return model.scenarios
-    .map((scenario, index) => [
-      `- [ ] Part ${index + 1}: Read \`plans/PART${index + 1}_PLAN.ai.md\``,
-      `  - Scenario: ${scenario.id}`,
-      `  - Outcome: ${scenario.partOutcome}`,
-      "  - Evidence: pending"
-    ].join("\n"))
+    .map((scenario, index) =>
+      [
+        `- [ ] Part ${index + 1}: Read \`plans/PART${index + 1}_PLAN.ai.md\``,
+        `  - Scenario: ${scenario.id}`,
+        `  - Outcome: ${scenario.partOutcome}`,
+        "  - Evidence: pending"
+      ].join("\n")
+    )
     .join("\n\n");
 }
 
@@ -57,9 +56,10 @@ export function parseMasterPartStatuses(masterContent: string): PartStatus[] {
     const partNumber = Number(match[2]);
     const scenarioId = lines[index + 1]?.match(/Scenario:\s*(.+)$/)?.[1]?.trim() ?? "UNKNOWN";
     const outcome = lines[index + 2]?.match(/Outcome:\s*(.+)$/)?.[1]?.trim() ?? "UNKNOWN";
-    const evidence = lines[index + 3]?.match(/Evidence:\s*(recorded|pending)/i)?.[1]?.toLowerCase() === "recorded"
-      ? "recorded"
-      : "pending";
+    const evidence =
+      lines[index + 3]?.match(/Evidence:\s*(recorded|pending)/i)?.[1]?.toLowerCase() === "recorded"
+        ? "recorded"
+        : "pending";
 
     parts.push({
       partNumber,

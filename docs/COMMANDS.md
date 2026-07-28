@@ -95,12 +95,14 @@ By default only failures, warnings, and a summary line are printed. Use `--verbo
 ## `plannable evidence PART-001 "summary"`
 
 Adds evidence to `PLAN_EVIDENCE.md` for a real part. Warns if the part already had evidence.
+Evidence requires a summary plus at least one `--artifact`, `--file`, `--check`, `--note`, or explicit `--unavailable "reason"`. A pending manual verification marker does not satisfy completion.
 
 Examples:
 
 ```bash
 plannable evidence PART-001 "Contact creation implemented and tested." --artifact "npm test"
 plannable evidence P2 "Pipeline update manually verified." --file src/deals.ts --check "npm run build"
+plannable evidence P3 "Implemented the browser flow." --unavailable "Browser QA runner was unavailable"
 ```
 
 Use `--json` for machine-readable output.

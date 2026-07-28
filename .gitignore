@@ -4,4 +4,4 @@ dist/
 *.log
 .env
 .env.*
-
+graphify-out/

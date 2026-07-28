@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage question or support
+    url: https://github.com/suntay44/Plannable/discussions
+    about: Ask how to use Plannable without opening a bug.
+  - name: Security vulnerability
+    url: https://github.com/suntay44/Plannable/security/advisories/new
+    about: Privately report a security issue.

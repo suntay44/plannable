@@ -60,7 +60,9 @@ export function validatePlannablePlan(content: string): ValidationResult {
     errors.push("Uses old @PlanPack name.");
   }
   if (!hasValidHeader(content)) {
-    errors.push(content.includes("@PlannablePlan") ? "Missing @PlannablePlan v0.1 header." : "Missing @PlannablePlan header.");
+    errors.push(
+      content.includes("@PlannablePlan") ? "Missing @PlannablePlan v0.1 header." : "Missing @PlannablePlan header."
+    );
   }
   if (looksBinaryOrBase64(content)) {
     errors.push("Content looks binary/base64-like instead of semantically readable.");
@@ -93,7 +95,9 @@ export function validatePlannablePlan(content: string): ValidationResult {
     warnings.push("Optional DICT block is missing.");
   }
   if (parsed.context.length === 0) {
-    warnings.push("Optional CTX context block is missing. Each part should carry compressed phase context (product, prior parts, next part).");
+    warnings.push(
+      "Optional CTX context block is missing. Each part should carry compressed phase context (product, prior parts, next part)."
+    );
   }
 
   return { ok: errors.length === 0, errors, warnings };
@@ -134,16 +138,17 @@ export async function renderPartPlan(model: PlanModel, scenario: Scenario, index
   const template = await readTemplate("PART_PLAN.ai.md");
   const partNumber = index + 1;
   const nextScenario = model.scenarios[index + 1];
-  const nextPart = nextScenario
-    ? `PART-${String(index + 2).padStart(3, "0")}`
-    : "COMPLETE";
+  const nextPart = nextScenario ? `PART-${String(index + 2).padStart(3, "0")}` : "COMPLETE";
 
-  const priorContext = index === 0
-    ? "none — this is the first part"
-    : model.scenarios
-        .slice(0, index)
-        .map((prior, priorIndex) => `PART-${String(priorIndex + 1).padStart(3, "0")} delivered "${prior.partOutcome}"`)
-        .join("; ");
+  const priorContext =
+    index === 0
+      ? "none — this is the first part"
+      : model.scenarios
+          .slice(0, index)
+          .map(
+            (prior, priorIndex) => `PART-${String(priorIndex + 1).padStart(3, "0")} delivered "${prior.partOutcome}"`
+          )
+          .join("; ");
   const nextContext = nextScenario
     ? `${nextPart} covers "${nextScenario.partOutcome}"`
     : "COMPLETE — run plannable verify";
@@ -152,7 +157,11 @@ export async function renderPartPlan(model: PlanModel, scenario: Scenario, index
     partId: `PART-${String(partNumber).padStart(3, "0")}`,
     partNumber: String(partNumber),
     partCount: String(model.scenarios.length),
-    phase: model.phaseName.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "CORE",
+    phase:
+      model.phaseName
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "") || "CORE",
     phaseName: model.phaseName,
     scenarioId: scenario.id,
     dependsOn: index === 0 ? "[]" : `[PART-${String(index).padStart(3, "0")}]`,
@@ -247,15 +256,16 @@ export function compressToPlannablePlan(input: string, fallbackName = "Imported 
   const title = input.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? fallbackName;
   const sections = extractSectionedItems(input);
 
-  const tasks = sections.tasks.length > 0
-    ? sections.tasks
-    : ["Inspect the source plan and identify the next concrete implementation task."];
-  const acceptance = sections.acceptance.length > 0
-    ? sections.acceptance
-    : tasks.slice(0, 3).map((task) => `Completed: ${task}`);
-  const verification = sections.verification.length > 0
-    ? sections.verification.map((item) => (item.endsWith("?") ? item : `${item}?`))
-    : ["npm run typecheck?", "npm test?", "npm run build?"];
+  const tasks =
+    sections.tasks.length > 0
+      ? sections.tasks
+      : ["Inspect the source plan and identify the next concrete implementation task."];
+  const acceptance =
+    sections.acceptance.length > 0 ? sections.acceptance : tasks.slice(0, 3).map((task) => `Completed: ${task}`);
+  const verification =
+    sections.verification.length > 0
+      ? sections.verification.map((item) => (item.endsWith("?") ? item : `${item}?`))
+      : ["npm run typecheck?", "npm test?", "npm run build?"];
   const context = [
     `source: imported from "${title}"`,
     ...sections.context,

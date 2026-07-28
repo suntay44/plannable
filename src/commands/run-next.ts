@@ -1,5 +1,4 @@
-import path from "node:path";
-import { readText } from "../core/filesystem.js";
+import { readProjectText } from "../core/filesystem.js";
 import { parseMasterPartStatuses } from "../core/master-plan.js";
 import { parseOptions } from "../core/options.js";
 import { estimateTokens } from "../core/plannable-plan.js";
@@ -13,8 +12,7 @@ export type RunNextSummary = {
 };
 
 export async function getRunNextSummary(cwd: string, includeContent = true): Promise<RunNextSummary> {
-  const masterPath = path.join(cwd, "MASTER_PLAN.md");
-  const master = await readText(masterPath);
+  const master = await readProjectText(cwd, "MASTER_PLAN.md");
   const next = parseMasterPartStatuses(master).find((part) => part.status === "pending");
 
   if (!next) {
@@ -24,7 +22,7 @@ export async function getRunNextSummary(cwd: string, includeContent = true): Pro
     };
   }
 
-  const content = includeContent ? await readText(path.join(cwd, next.path)) : undefined;
+  const content = includeContent ? await readProjectText(cwd, next.path) : undefined;
   return {
     next,
     instruction: [

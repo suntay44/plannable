@@ -53,12 +53,23 @@ export function markPartCompleteInMaster(masterContent: string, partId: string):
 }
 
 export function markEvidenceRecordedInMaster(masterContent: string, partNumber: number): string {
+  return setEvidenceStatusInMaster(masterContent, partNumber, "recorded");
+}
+
+export function setEvidenceStatusInMaster(
+  masterContent: string,
+  partNumber: number,
+  status: "pending" | "recorded"
+): string {
   const lines = masterContent.split(/\r?\n/);
   for (let index = 0; index < lines.length; index += 1) {
     if (new RegExp(`^- \\[( |x|X)\\] Part ${partNumber}:`).test(lines[index])) {
       for (let offset = 1; offset <= 4; offset += 1) {
         if (lines[index + offset]?.match(/Evidence:\s*(recorded|pending)/i)) {
-          lines[index + offset] = lines[index + offset].replace(/Evidence:\s*(recorded|pending)/i, "Evidence: recorded");
+          lines[index + offset] = lines[index + offset].replace(
+            /Evidence:\s*(recorded|pending)/i,
+            `Evidence: ${status}`
+          );
           return lines.join("\n");
         }
       }
@@ -71,7 +82,8 @@ export function markEvidenceRecordedInMaster(masterContent: string, partNumber: 
 export function assertPartHasEvidence(evidenceContent: string, partId: string): void {
   const normalized = normalizePartId(partId);
   if (!hasEvidenceForPart(evidenceContent, normalized)) {
-    throw new Error(`Part ${normalized} has no evidence. Run plannable evidence ${normalized} "summary" first, or pass --summary to plannable complete.`);
+    throw new Error(
+      `Part ${normalized} has no evidence. Run plannable evidence ${normalized} "summary" first, or pass --summary to plannable complete.`
+    );
   }
 }
-

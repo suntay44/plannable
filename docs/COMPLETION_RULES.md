@@ -8,6 +8,8 @@ Plannable completion is evidence-based.
 - The `AC` acceptance criteria in the `.ai.md` file are satisfied or explained.
 - The `V` verification commands are run or marked unavailable with a reason.
 - Evidence is added to `PLAN_EVIDENCE.md`.
+- Evidence contains a non-empty summary plus at least one completed artifact, changed file, check, or note.
+- If a verification step cannot run, evidence names the unavailable step and explains why; “manual verification pending” is not completion evidence.
 - `PLAN_STATE.md` marks the part complete.
 - `MASTER_PLAN.md` marks the matching part complete.
 - `plannable verify` passes.
@@ -30,3 +32,11 @@ For Part 1, use:
 ```
 
 Then describe what changed and how it was verified.
+
+Use `--unavailable "reason"` only when a planned verification step genuinely cannot run:
+
+```bash
+plannable evidence PART-001 "Implemented and reviewed the parser." \
+  --check "npm test" \
+  --unavailable "Windows symlink QA requires a Windows runner"
+```

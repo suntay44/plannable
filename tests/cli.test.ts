@@ -29,6 +29,17 @@ async function runPlannable(cwd: string, args: string[]) {
 }
 
 describe("Plannable CLI", () => {
+  it("rejects unknown options and missing option values", async () => {
+    await withTempDir(async (dir) => {
+      await expect(runPlannable(dir, ["create", "CRM", "--josn"])).rejects.toMatchObject({
+        stderr: expect.stringContaining("Unknown option for create: --josn")
+      });
+      await expect(runPlannable(dir, ["evidence", "PART-001", "tested", "--artifact"])).rejects.toMatchObject({
+        stderr: expect.stringContaining("Option --artifact requires a value")
+      });
+    });
+  });
+
   it("create, status, verify, and run-next use symbolic PlannablePlan files", async () => {
     await withTempDir(async (dir) => {
       await runPlannable(dir, ["create", "CRM"]);
@@ -61,7 +72,15 @@ describe("Plannable CLI", () => {
 
   it("create supports scenario hints and arbitrary software plans with three parts", async () => {
     await withTempDir(async (dir) => {
-      for (const product of ["CRM", "TODO app", "restaurant homepage", "inventory management app", "SaaS billing dashboard", "mobile habit tracker", "backend API"]) {
+      for (const product of [
+        "CRM",
+        "TODO app",
+        "restaurant homepage",
+        "inventory management app",
+        "SaaS billing dashboard",
+        "mobile habit tracker",
+        "backend API"
+      ]) {
         const productDir = path.join(dir, product.replace(/\s+/g, "-"));
         await mkdir(productDir);
         await runPlannable(productDir, ["create", product]);
@@ -97,7 +116,11 @@ describe("Plannable CLI", () => {
 
   it("compress converts a markdown task file into a .ai.md file", async () => {
     await withTempDir(async (dir) => {
-      await writeFile(path.join(dir, "plan.md"), "# Import Contacts\n\n- Create import form\n- Validate CSV rows\n", "utf8");
+      await writeFile(
+        path.join(dir, "plan.md"),
+        "# Import Contacts\n\n- Create import form\n- Validate CSV rows\n",
+        "utf8"
+      );
 
       const result = await runPlannable(dir, ["compress", "plan.md"]);
       expect(result.stdout).toMatch(/Tokens \(est\.\): input ~\d+ -> output ~\d+/);
@@ -222,12 +245,13 @@ describe("Plannable CLI", () => {
   });
 
   it("parses masterplans with more than nine parts across multiple phases", () => {
-    const partBlock = (n: number) => [
-      `- [${n <= 4 ? "x" : " "}] Part ${n}: Read \`plans/PART${n}_PLAN.ai.md\``,
-      `  - Scenario: SCN-${String(n).padStart(3, "0")}`,
-      `  - Outcome: Outcome ${n} works`,
-      "  - Evidence: pending"
-    ].join("\n");
+    const partBlock = (n: number) =>
+      [
+        `- [${n <= 4 ? "x" : " "}] Part ${n}: Read \`plans/PART${n}_PLAN.ai.md\``,
+        `  - Scenario: SCN-${String(n).padStart(3, "0")}`,
+        `  - Outcome: Outcome ${n} works`,
+        "  - Evidence: pending"
+      ].join("\n");
     const master = [
       "# MASTER_PLAN.md",
       "",
@@ -249,14 +273,7 @@ describe("Plannable CLI", () => {
   });
 
   it("validation detects missing fields, old names, and empty blocks", () => {
-    const invalid = [
-      "@PlanPack v0.1",
-      "",
-      "ID=PART-001",
-      "AC:",
-      "",
-      "V:"
-    ].join("\n");
+    const invalid = ["@PlanPack v0.1", "", "ID=PART-001", "AC:", "", "V:"].join("\n");
 
     const result = validatePlannablePlan(invalid);
     expect(result.ok).toBe(false);
@@ -272,11 +289,48 @@ describe("Plannable CLI", () => {
 
       const masterPath = path.join(dir, "MASTER_PLAN.md");
       const statePath = path.join(dir, "PLAN_STATE.md");
-      await writeFile(masterPath, (await readFile(masterPath, "utf8")).replace("- [ ] Part 1:", "- [x] Part 1:"), "utf8");
+      await writeFile(
+        masterPath,
+        (await readFile(masterPath, "utf8")).replace("- [ ] Part 1:", "- [x] Part 1:"),
+        "utf8"
+      );
       await writeFile(statePath, (await readFile(statePath, "utf8")).replace("- [ ] Part 1:", "- [x] Part 1:"), "utf8");
 
       await expect(runPlannable(dir, ["verify"])).rejects.toMatchObject({
         stderr: expect.stringContaining("Plannable verification failed")
+      });
+    });
+  });
+
+  it("verify detects PLAN_STATE checkbox drift even when part counts match", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["create", "CRM"]);
+
+      const statePath = path.join(dir, "PLAN_STATE.md");
+      await writeFile(statePath, (await readFile(statePath, "utf8")).replace("- [ ] Part 1:", "- [x] Part 1:"), "utf8");
+
+      await expect(runPlannable(dir, ["verify", "--json"])).rejects.toMatchObject({
+        stdout: expect.stringContaining('"ok": false')
+      });
+    });
+  });
+
+  it("run-next refuses part paths that escape the project", async () => {
+    await withTempDir(async (dir) => {
+      const projectDir = path.join(dir, "project");
+      await mkdir(projectDir);
+      await runPlannable(projectDir, ["create", "CRM"]);
+      await writeFile(path.join(dir, "outside.ai.md"), "@PlannablePlan v0.1\nOUTSIDE", "utf8");
+
+      const masterPath = path.join(projectDir, "MASTER_PLAN.md");
+      await writeFile(
+        masterPath,
+        (await readFile(masterPath, "utf8")).replace("plans/PART1_PLAN.ai.md", "../outside.ai.md"),
+        "utf8"
+      );
+
+      await expect(runPlannable(projectDir, ["run-next"])).rejects.toMatchObject({
+        stderr: expect.stringContaining("escapes the project root")
       });
     });
   });
@@ -309,6 +363,26 @@ describe("Plannable CLI", () => {
 
       const verify = await runPlannable(dir, ["verify"]);
       expect(verify.stdout).toMatch(/Plannable verification passed/);
+    });
+  });
+
+  it("rejects weak evidence and accepts an explicit unavailable reason", async () => {
+    await withTempDir(async (dir) => {
+      await runPlannable(dir, ["create", "CRM"]);
+
+      await expect(runPlannable(dir, ["evidence", "P1", "Contacts implemented."])).rejects.toMatchObject({
+        stderr: expect.stringContaining("Evidence requires at least one")
+      });
+
+      await runPlannable(dir, [
+        "evidence",
+        "P1",
+        "Contacts implemented; browser QA was unavailable.",
+        "--unavailable",
+        "Browser environment was not available; npm test passed separately."
+      ]);
+      const complete = await runPlannable(dir, ["complete", "P1"]);
+      expect(complete.stdout).toMatch(/Completed PART-001/);
     });
   });
 
@@ -370,8 +444,16 @@ describe("Plannable CLI", () => {
 
       const masterPath = path.join(dir, "MASTER_PLAN.md");
       const statePath = path.join(dir, "PLAN_STATE.md");
-      await writeFile(masterPath, (await readFile(masterPath, "utf8")).replace("Evidence: recorded", "Evidence: pending"), "utf8");
-      await writeFile(statePath, (await readFile(statePath, "utf8")).replace("Next: plans/PART1_PLAN.ai.md", "Next: plans/PART9_PLAN.ai.md"), "utf8");
+      await writeFile(
+        masterPath,
+        (await readFile(masterPath, "utf8")).replace("Evidence: recorded", "Evidence: pending"),
+        "utf8"
+      );
+      await writeFile(
+        statePath,
+        (await readFile(statePath, "utf8")).replace("Next: plans/PART1_PLAN.ai.md", "Next: plans/PART9_PLAN.ai.md"),
+        "utf8"
+      );
 
       const repair = await runPlannable(dir, ["repair", "--json"]);
       const summary = JSON.parse(repair.stdout);
@@ -450,7 +532,11 @@ describe("Plannable CLI", () => {
 
       const statePath = path.join(dir, "PLAN_STATE.md");
       const original = await readFile(statePath, "utf8");
-      await writeFile(statePath, original.replace("Next: plans/PART1_PLAN.ai.md", "Next: plans/PART9_PLAN.ai.md"), "utf8");
+      await writeFile(
+        statePath,
+        original.replace("Next: plans/PART1_PLAN.ai.md", "Next: plans/PART9_PLAN.ai.md"),
+        "utf8"
+      );
 
       const dryRun = JSON.parse((await runPlannable(dir, ["repair", "--dry-run", "--json"])).stdout);
       expect(dryRun.changed).toBe(true);
@@ -493,7 +579,9 @@ describe("Plannable CLI", () => {
     await withTempDir(async (dir) => {
       await runPlannable(dir, ["create", "CRM"]);
 
-      const evidence = JSON.parse((await runPlannable(dir, ["evidence", "P1", "Contacts verified.", "--json", "--artifact", "npm test"])).stdout);
+      const evidence = JSON.parse(
+        (await runPlannable(dir, ["evidence", "P1", "Contacts verified.", "--json", "--artifact", "npm test"])).stdout
+      );
       expect(evidence.ok).toBe(true);
       expect(evidence.partId).toBe("PART-001");
       expect(evidence.alreadyRecorded).toBe(false);

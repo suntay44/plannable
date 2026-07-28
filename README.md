@@ -8,7 +8,7 @@
 Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plus compressed, agent-readable part files (**PlannablePlan** `.ai.md` format). Agents load one part at a time — each part carries enough context about the whole masterplan to work alone — and nothing gets checked off without recorded evidence.
 <br />
 
-![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg) ![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20deps-0-success.svg) ![Release](https://img.shields.io/github/v/release/suntay44/Plannable)
+![CI](https://github.com/suntay44/Plannable/actions/workflows/ci.yml/badge.svg) ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg) ![Node >=22](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg) ![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20deps-0-success.svg) ![Release](https://img.shields.io/github/v/release/suntay44/Plannable)
 
 
 <br />
@@ -28,7 +28,7 @@ Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plu
 | Agent context per step | **~332 tokens** — one compressed `.ai.md` part with a built-in `CTX:` masterplan summary | **~4,969 tokens** (lower bound) — spec + plan + tasks + constitution ([methodology](docs/BENCHMARK.md)) |
 | Completion honesty | Evidence-gated: `complete` refuses without recorded proof | Checklist-based |
 | State drift | Impossible by design — `PLAN_STATE.md` is regenerated from source-of-truth files | Manual consistency (`/analyze` helps) |
-| Prerequisites | Node 18+, zero runtime dependencies | Python, uv, per-agent setup |
+| Prerequisites | Node 22+, zero runtime dependencies | Python, uv, per-agent setup |
 | Specification depth | Scenario drafts you enrich | Deeper: constitution, clarify, analyze |
 | Agent integrations | Claude Code, Codex, Cursor | 30+ agents |
 
@@ -42,7 +42,7 @@ Reach for it when you're starting from a product idea and want a working first p
 
 ## Install
 
-> Requires Node.js 18+
+> Requires Node.js 22+
 
 ```bash
 git clone https://github.com/suntay44/Plannable.git
@@ -167,6 +167,8 @@ The workflow is the same everywhere: create → enrich the draft with product-sp
 - [examples/](examples/) — generated example projects (CRM, TODO app, restaurant homepage)
 - [docs/V1_ROADMAP.md](docs/V1_ROADMAP.md) — path to v1
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, project layout, rules
+- [docs/RELEASING.md](docs/RELEASING.md) — validated, provenance-ready release process
+- [SECURITY.md](SECURITY.md) — private vulnerability reporting
 - [CHANGELOG.md](CHANGELOG.md) — release history
 
 MIT licensed.

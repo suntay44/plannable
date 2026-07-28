@@ -19,5 +19,7 @@ export async function compressCommand(cwd: string, args: string[]): Promise<void
   const outputTokens = estimateTokens(output);
   const delta = inputTokens > 0 ? Math.round(((inputTokens - outputTokens) / inputTokens) * 100) : 0;
   console.log(`Wrote compressed PlannablePlan: ${outputPath}`);
-  console.log(`Tokens (est.): input ~${inputTokens} -> output ~${outputTokens} (${delta >= 0 ? `${delta}% smaller` : `${-delta}% larger — source plan was already terse`})`);
+  console.log(
+    `Tokens (est.): input ~${inputTokens} -> output ~${outputTokens} (${delta >= 0 ? `${delta}% smaller` : `${-delta}% larger — source plan was already terse`})`
+  );
 }

@@ -1,9 +1,8 @@
-import path from "node:path";
-import { readText } from "../core/filesystem.js";
+import { readProjectText } from "../core/filesystem.js";
 import { hasEvidenceForPart, parseEvidencePartIds } from "../core/evidence.js";
 import { parseMasterPartStatuses } from "../core/master-plan.js";
 import { parseOptions } from "../core/options.js";
-import { parseCurrentPartPath, parsePartStatuses } from "../core/state.js";
+import { parseCurrentPartPath } from "../core/state.js";
 
 export type StatusSummary = {
   totalParts: number;
@@ -27,16 +26,15 @@ export type StatusSummary = {
 };
 
 export async function getStatusSummary(cwd: string): Promise<StatusSummary> {
-  const master = await readText(path.join(cwd, "MASTER_PLAN.md"));
-  const state = await readText(path.join(cwd, "PLAN_STATE.md"));
-  const evidence = await readText(path.join(cwd, "PLAN_EVIDENCE.md"));
+  const master = await readProjectText(cwd, "MASTER_PLAN.md");
+  const state = await readProjectText(cwd, "PLAN_STATE.md");
+  const evidence = await readProjectText(cwd, "PLAN_EVIDENCE.md");
   const parts = parseMasterPartStatuses(master);
-  const stateParts = parsePartStatuses(state);
   const complete = parts.filter((part) => part.status === "complete").length;
   const pending = parts.length - complete;
   const recordedEvidence = parts.filter((part) => {
     const partLabel = `PART-${String(part.partNumber).padStart(3, "0")}`;
-    return part.evidence === "recorded" || hasEvidenceForPart(evidence, partLabel);
+    return hasEvidenceForPart(evidence, partLabel);
   }).length;
   const currentPartPath = parseCurrentPartPath(state) ?? "UNKNOWN";
 
@@ -60,8 +58,7 @@ export async function getStatusSummary(cwd: string): Promise<StatusSummary> {
     nextPart: parts.find((part) => part.status === "pending")?.path ?? null,
     parts: parts.map((part) => {
       const partLabel = `PART-${String(part.partNumber).padStart(3, "0")}`;
-      const statePart = stateParts.find((candidate) => candidate.partNumber === part.partNumber);
-      const evidenceStatus = hasEvidenceForPart(evidence, partLabel) || statePart?.evidence === "recorded" ? "recorded" : "pending";
+      const evidenceStatus = hasEvidenceForPart(evidence, partLabel) ? "recorded" : "pending";
       return { ...part, evidence: evidenceStatus };
     }),
     missingEvidence: missingEvidence.map((part) => part.partNumber),
@@ -93,7 +90,9 @@ export async function statusCommand(cwd: string, args: string[] = []): Promise<v
       lastPhase = part.phase;
     }
     const marker = part.status === "complete" ? "x" : " ";
-    console.log(`${part.phase ? "  " : ""}[${marker}] Part ${part.partNumber}: ${part.scenarioId} - ${part.outcome} (evidence: ${part.evidence})`);
+    console.log(
+      `${part.phase ? "  " : ""}[${marker}] Part ${part.partNumber}: ${part.scenarioId} - ${part.outcome} (evidence: ${part.evidence})`
+    );
   }
 
   if (summary.nextPart) {
@@ -102,9 +101,15 @@ export async function statusCommand(cwd: string, args: string[] = []): Promise<v
   }
 
   console.log("");
-  console.log(`Missing evidence: ${summary.missingEvidence.length > 0 ? summary.missingEvidence.map((partNumber) => `Part ${partNumber}`).join(", ") : "none"}`);
-  console.log(`Checked parts without evidence: ${summary.checkedPartsWithoutEvidence.length > 0 ? summary.checkedPartsWithoutEvidence.map((partNumber) => `Part ${partNumber}`).join(", ") : "none"}`);
-  console.log(`Evidence without checkbox: ${summary.evidenceWithoutCheckbox.length > 0 ? summary.evidenceWithoutCheckbox.join(", ") : "none"}`);
+  console.log(
+    `Missing evidence: ${summary.missingEvidence.length > 0 ? summary.missingEvidence.map((partNumber) => `Part ${partNumber}`).join(", ") : "none"}`
+  );
+  console.log(
+    `Checked parts without evidence: ${summary.checkedPartsWithoutEvidence.length > 0 ? summary.checkedPartsWithoutEvidence.map((partNumber) => `Part ${partNumber}`).join(", ") : "none"}`
+  );
+  console.log(
+    `Evidence without checkbox: ${summary.evidenceWithoutCheckbox.length > 0 ? summary.evidenceWithoutCheckbox.join(", ") : "none"}`
+  );
 
   if (summary.checkedPartsWithoutEvidence.length > 0) {
     console.log("");

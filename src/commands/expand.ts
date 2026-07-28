@@ -12,4 +12,3 @@ export async function expandCommand(cwd: string, args: string[]): Promise<void> 
 
   console.log(expandPartPlan(content));
 }
-

@@ -13,12 +13,14 @@ export type PartStatus = {
 
 function renderStateParts(model: PlanModel): string {
   return model.scenarios
-    .map((scenario, index) => [
-      `- [ ] Part ${index + 1}: plans/PART${index + 1}_PLAN.ai.md`,
-      `  - Scenario: ${scenario.id}`,
-      `  - Outcome: ${scenario.partOutcome}`,
-      "  - Evidence: pending"
-    ].join("\n"))
+    .map((scenario, index) =>
+      [
+        `- [ ] Part ${index + 1}: plans/PART${index + 1}_PLAN.ai.md`,
+        `  - Scenario: ${scenario.id}`,
+        `  - Outcome: ${scenario.partOutcome}`,
+        "  - Evidence: pending"
+      ].join("\n")
+    )
     .join("\n\n");
 }
 
@@ -45,9 +47,10 @@ export function parsePartStatuses(stateContent: string): PartStatus[] {
     const path = match[3].trim();
     const scenarioId = lines[index + 1]?.match(/Scenario:\s*(.+)$/)?.[1]?.trim() ?? "UNKNOWN";
     const outcome = lines[index + 2]?.match(/Outcome:\s*(.+)$/)?.[1]?.trim() ?? "UNKNOWN";
-    const evidence = lines[index + 3]?.match(/Evidence:\s*(recorded|pending)/i)?.[1]?.toLowerCase() === "recorded"
-      ? "recorded"
-      : "pending";
+    const evidence =
+      lines[index + 3]?.match(/Evidence:\s*(recorded|pending)/i)?.[1]?.toLowerCase() === "recorded"
+        ? "recorded"
+        : "pending";
 
     parts.push({
       partNumber,
@@ -87,7 +90,7 @@ export function regenerateState(
   const partLines = masterParts
     .map((part) => {
       const partLabel = `PART-${String(part.partNumber).padStart(3, "0")}`;
-      const evidence = part.evidence === "recorded" || hasEvidence(partLabel) ? "recorded" : "pending";
+      const evidence = hasEvidence(partLabel) ? "recorded" : "pending";
       return [
         `- [${part.status === "complete" ? "x" : " "}] Part ${part.partNumber}: ${part.path}`,
         `  - Scenario: ${part.scenarioId}`,
