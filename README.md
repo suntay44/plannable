@@ -25,9 +25,9 @@ Plannable turns a product idea into a short, human-readable `MASTER_PLAN.md` plu
 
 | | Plannable | spec-kit |
 | --- | --- | --- |
-| Agent context per step | **~332 tokens** — one compressed `.ai.md` part with a built-in `CTX:` masterplan summary | **~4,969 tokens** (lower bound) — spec + plan + tasks + constitution ([methodology](docs/BENCHMARK.md)) |
+| Agent context per step | **~332 estimated tokens** in the historical sample — one `.ai.md` part; current output varies | **~4,969 estimated tokens** — historical template comparison ([methodology and limits](docs/BENCHMARK.md)) |
 | Completion honesty | Evidence-gated: `complete` refuses without recorded proof | Checklist-based |
-| State drift | Impossible by design — `PLAN_STATE.md` is regenerated from source-of-truth files | Manual consistency (`/analyze` helps) |
+| State drift | `verify` detects inconsistencies; `repair` regenerates `PLAN_STATE.md` from source-of-truth files | Manual consistency (`/analyze` helps) |
 | Prerequisites | Node 22+, zero runtime dependencies | Python, uv, per-agent setup |
 | Specification depth | Scenario drafts you enrich | Deeper: constitution, clarify, analyze |
 | Agent integrations | Claude Code, Codex, Cursor | 30+ agents |
@@ -45,18 +45,22 @@ Reach for it when you're starting from a product idea and want a working first p
 > Requires Node.js 22+
 
 ```bash
-git clone https://github.com/suntay44/Plannable.git
-cd Plannable && npm install && npm run build && npm link
+git clone https://github.com/suntay44/Plannable.git "Plannable source" &&
+cd "Plannable source" &&
+npm ci && npm run build && npm link &&
 plannable --version
 ```
 
-(`npm install -g plannable` will work once the package is published to npm.)
+This installs the CLI only. Keep the source folder while linked, then switch to the project you want to plan. Install **one matching agent skill separately** using [docs/INSTALL.md](docs/INSTALL.md#install-one-agent-skill). That guide includes project-local CLI installs, custom paths, updates, and uninstall.
+
+The npm package is not published as of 2026-09-08. `npm install -g plannable` and registry-only `npx plannable` currently return 404. Use the clone/build route above; GitHub source ZIPs also require extraction and a build. This repository is not a plugin ZIP or marketplace catalog.
 
 You can also ask your agent:
 
 ```txt
 Look at this GitHub repo and install Plannable:
 https://github.com/suntay44/Plannable
+Follow docs/INSTALL.md; preserve existing files and verify the CLI and skill separately.
 ```
 
 See [docs/INSTALL.md](docs/INSTALL.md) for CLI, Codex Desktop, Claude Code, and Cursor install steps.
@@ -110,8 +114,8 @@ V:
 - npm test?
 
 DONE:
-- update MASTER_PLAN.md Part 2=[x]
-- append PLAN_EVIDENCE.md#PART-002 with files+checks+notes
+- append PLAN_EVIDENCE.md#PART-002 with summary+files+checks+notes
+- run plannable complete PART-002
 
 S:
 - if database stack unclear, stop and ask
@@ -134,11 +138,11 @@ Full format reference: [docs/PLANNABLE_PLAN_SPEC.md](docs/PLANNABLE_PLAN_SPEC.md
 | `plannable compress plan.md` | Convert a Markdown plan into `plan.ai.md`, reporting token savings |
 | `plannable expand plans/PART1_PLAN.ai.md` | Expand a compressed part back into readable Markdown |
 
-Every workflow command supports `--json` for machine-readable output. `verify` prints only failures by default (`--verbose` lists every check). Details: [docs/COMMANDS.md](docs/COMMANDS.md).
+`run-next`, `status`, `verify`, `doctor`, `repair`, `evidence`, and `complete` support `--json` for machine-readable output. `verify` prints only failures by default (`--verbose` lists every check). Details: [docs/COMMANDS.md](docs/COMMANDS.md).
 
 ## Using Plannable from an AI Agent
 
-Plannable ships skill instructions for three platforms — copy or reference the matching folder:
+Plannable ships skill instructions for three platforms — install the CLI and copy the matching folder into your target project or personal skill directory:
 
 | Platform | Skill location | Invocation |
 | --- | --- | --- |
@@ -146,7 +150,7 @@ Plannable ships skill instructions for three platforms — copy or reference the
 | Codex | `.agents/skills/plannable/` (official discovery path; `.codex/skills/` ships as a mirror) | `$plannable create a CRM` |
 | Cursor | `.cursor/skills/plannable/` (+ `.cursor/commands/`, `.cursor/rules/`) | `/plannable create a CRM` |
 
-Plannable is a **skill** (the open [Agent Skills](https://agentskills.io) `SKILL.md` standard), not a plugin. Codex officially discovers repo skills from `.agents/skills/`; the `.codex/skills/` copy exists for setups that scan that path instead.
+Plannable is a **standalone skill plus CLI** (the open [Agent Skills](https://agentskills.io) `SKILL.md` standard), not a packaged plugin. Subcommands are arguments to the skill; there are no namespaced plugin commands in this distribution. Codex officially discovers repo skills from `.agents/skills/`; the `.codex/skills/` copy exists for setups that scan that path instead.
 
 The workflow is the same everywhere: create → enrich the draft with product-specific detail → run-next → implement → evidence → complete → verify.
 

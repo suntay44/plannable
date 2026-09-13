@@ -2,8 +2,7 @@
 
 What does an agent have to load into context for **one implementation step**?
 
-Measured 2026-07-05. Token estimates use the same method for both tools: `bytes / 4`
-(the `estimateTokens` heuristic Plannable uses internally).
+Historical measurements from 2026-07-05, not a benchmark of the current release. This comparison uses `bytes / 4`; the CLI uses `ceil(string.length / 4)`, which differs for non-ASCII text. Neither is a model tokenizer. See [current local measurements](IMPROVEMENTS.md) for the smaller generated parts.
 
 ## Result
 
@@ -28,8 +27,7 @@ numbers are **actual generated output**, ready to execute.
   (constitution, clarification history). If you need that depth, the extra
   tokens buy something.
 - One-time costs: both tools have setup/create steps outside the per-step loop.
-- Model behavior: fewer tokens per step means less context rot in long sessions,
-  but this benchmark counts tokens, not outcomes.
+- Model behavior: this benchmark counts estimated tokens, not correctness, relevance, or long-session outcomes.
 
 ## Reproduce it
 
@@ -52,5 +50,4 @@ wc -c plans/PART1_PLAN.ai.md MASTER_PLAN.md   # divide by 4
 plannable run-next   # also prints the part's token estimate directly
 ```
 
-Both plans describe the same product idea (a CRM). Sizes vary a little by product
-domain; the ratio does not change materially.
+The Plannable sample describes a CRM; the spec-kit side measures empty templates. Sizes and ratios vary with input and version. This is not a comparison of equally detailed completed plans.

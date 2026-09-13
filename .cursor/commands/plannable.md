@@ -8,7 +8,7 @@ Examples:
 /plannable create a CRM
 /plannable create an inventory management app
 /plannable run-next
-/plannable evidence PART-001 "Implemented and verified the active part"
+/plannable evidence PART-001 "Implemented and verified the active part" --artifact "npm test"
 /plannable complete PART-001
 /plannable status
 /plannable verify

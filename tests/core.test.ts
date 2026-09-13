@@ -12,8 +12,12 @@ import {
   PLANNABLE_PLAN_HEADER,
   compressToPlannablePlan,
   estimateTokens,
+  parsePlannablePlan,
+  renderPartPlan,
   validatePlannablePlan
 } from "../src/core/plannable-plan.ts";
+
+import { buildPlanModel } from "../src/core/templates.ts";
 
 const repoRoot = process.cwd();
 
@@ -178,6 +182,36 @@ describe("core plan helpers", () => {
     }
   );
 
+  it("keeps generated parts compact without dropping tasks, criteria, or evidence gates", async () => {
+    const baselines: Record<string, number[]> = {
+      CRM: [332, 339, 341],
+      TODO: [312, 305, 314],
+      restaurant: [322, 331, 329],
+      billing: [346, 338, 348],
+      mobile: [330, 335, 336],
+      API: [312, 315, 319],
+      inventory: [341, 335, 344]
+    };
+    for (const [name, baseline] of Object.entries(baselines)) {
+      const model = buildPlanModel(name);
+      for (const [index, scenario] of model.scenarios.entries()) {
+        const content = await renderPartPlan(model, scenario, index);
+        const parsed = parsePlannablePlan(content);
+        expect(validatePlannablePlan(content)).toEqual({ ok: true, errors: [], warnings: [] });
+        expect(estimateTokens(content)).toBeLessThan(baseline[index] * 0.95);
+        expect(parsed.tasks).toEqual(scenario.steps.map((step, i) => `${i + 1} ${step}`));
+        expect(parsed.acceptanceCriteria).toEqual(scenario.doneWhen.map((item) => `- ${item}`));
+        for (const prior of model.scenarios.slice(0, index)) {
+          expect(parsed.context.join("\n")).toContain(prior.partOutcome);
+        }
+        expect(parsed.completionUpdates).toEqual([
+          `- append PLAN_EVIDENCE.md#${parsed.id}: summary+files+checks+notes`,
+          `- run plannable complete ${parsed.id}`
+        ]);
+      }
+    }
+  });
+
   it("compresses markdown into readable PlannablePlan format with context and token savings", () => {
     const source = [
       "# Notifications",
@@ -198,6 +232,10 @@ describe("core plan helpers", () => {
 
     expect(compressed).toContain(PLANNABLE_PLAN_HEADER);
     expect(compressed).toContain("CTX:");
+    expect(parsePlannablePlan(compressed).completionUpdates).toEqual([
+      "- append PLAN_EVIDENCE.md#PART-001: summary+files+checks+notes",
+      "- run plannable complete PART-001"
+    ]);
     expect(compressed).toContain("- Use existing mail provider");
     expect(estimateTokens(compressed)).toBeLessThan(estimateTokens(source) + 250);
   });

@@ -1,3 +1,5 @@
+import { extractSectionedItems } from "./markdown-import.js";
+import { type ProjectContext, UNKNOWN_CHECKS } from "./project-context.js";
 import { readTemplate } from "./filesystem.js";
 import { type PlanModel, renderTemplate, type Scenario } from "./templates.js";
 
@@ -91,6 +93,11 @@ export function validatePlannablePlan(content: string): ValidationResult {
     errors.push("Missing or empty S stop conditions block.");
   }
 
+  const copiedCriteria = new Set(parsed.tasks.map((task) => `- Completed: ${stripListMarker(task)}`));
+  if (parsed.acceptanceCriteria.length > 0 && parsed.acceptanceCriteria.every((item) => copiedCriteria.has(item))) {
+    warnings.push("Acceptance criteria repeat tasks; replace them with observable outcomes.");
+  }
+
   if (!content.includes("DICT:")) {
     warnings.push("Optional DICT block is missing.");
   }
@@ -117,7 +124,7 @@ export function parseOutcome(content: string): string | undefined {
 
 export function parseGoal(content: string): string | undefined {
   const goalBlock = parseBlock(content, "G");
-  return goalBlock[0]?.replace(/^[-\d.\s]+/, "").trim() || content.match(/^goal:\s*(.+)$/m)?.[1]?.trim();
+  return (goalBlock[0] && stripListMarker(goalBlock[0]).trim()) || content.match(/^goal:\s*(.+)$/m)?.[1]?.trim();
 }
 
 export function parsePlanSummary(content: string): PlannablePlanSummary {
@@ -134,7 +141,12 @@ export function missingRequiredBlocks(content: string): string[] {
   return REQUIRED_BLOCKS.filter((blockName) => parseBlock(content, blockName).length === 0);
 }
 
-export async function renderPartPlan(model: PlanModel, scenario: Scenario, index: number): Promise<string> {
+export async function renderPartPlan(
+  model: PlanModel,
+  scenario: Scenario,
+  index: number,
+  project?: ProjectContext
+): Promise<string> {
   const template = await readTemplate("PART_PLAN.ai.md");
   const partNumber = index + 1;
   const nextScenario = model.scenarios[index + 1];
@@ -142,16 +154,12 @@ export async function renderPartPlan(model: PlanModel, scenario: Scenario, index
 
   const priorContext =
     index === 0
-      ? "none — this is the first part"
+      ? "none (first part)"
       : model.scenarios
           .slice(0, index)
-          .map(
-            (prior, priorIndex) => `PART-${String(priorIndex + 1).padStart(3, "0")} delivered "${prior.partOutcome}"`
-          )
+          .map((prior, priorIndex) => `PART-${String(priorIndex + 1).padStart(3, "0")}: ${prior.partOutcome}`)
           .join("; ");
-  const nextContext = nextScenario
-    ? `${nextPart} covers "${nextScenario.partOutcome}"`
-    : "COMPLETE — run plannable verify";
+  const nextContext = nextScenario ? `${nextPart}: ${nextScenario.partOutcome}` : "COMPLETE — run plannable verify";
 
   return renderTemplate(template, {
     partId: `PART-${String(partNumber).padStart(3, "0")}`,
@@ -173,7 +181,10 @@ export async function renderPartPlan(model: PlanModel, scenario: Scenario, index
     priorContext,
     nextContext,
     steps: numberedList(scenario.steps),
-    acceptanceCriteria: bulletList(scenario.doneWhen)
+    acceptanceCriteria: bulletList(scenario.doneWhen),
+    requestContext: model.request ? `\n- request: ${JSON.stringify(model.request)}` : "",
+    files: (project?.files ?? ["? identify files for this part"]).join("\n"),
+    verification: bulletList(project?.verification ?? UNKNOWN_CHECKS)
   });
 }
 
@@ -203,7 +214,13 @@ export function expandPlannablePlan(content: string): string {
     renderReadableList(parsed.acceptanceCriteria),
     "",
     "## Verification",
-    renderReadableList(parsed.verification)
+    renderReadableList(parsed.verification),
+    "",
+    "## Completion",
+    renderReadableList(parsed.completionUpdates),
+    "",
+    "## Stop Conditions",
+    renderReadableList(parsed.stopConditions)
   ].join("\n");
 }
 
@@ -211,48 +228,12 @@ export function renderPlanFromMarkdown(input: string, fallbackName = "Imported P
   return compressToPlannablePlan(input, fallbackName);
 }
 
-type SectionedItems = {
-  tasks: string[];
-  acceptance: string[];
-  verification: string[];
-  context: string[];
-};
-
-function sectionKindFor(heading: string): keyof SectionedItems | undefined {
-  const normalized = heading.toLowerCase();
-  if (/accept|criteria|done when|definition of done/.test(normalized)) return "acceptance";
-  if (/verif|test|check|qa/.test(normalized)) return "verification";
-  if (/context|background|constraint|stack|convention/.test(normalized)) return "context";
-  if (/task|step|implement|todo|plan|work/.test(normalized)) return "tasks";
-  return undefined;
-}
-
-function extractSectionedItems(input: string): SectionedItems {
-  const sections: SectionedItems = { tasks: [], acceptance: [], verification: [], context: [] };
-  let currentKind: keyof SectionedItems = "tasks";
-
-  for (const rawLine of input.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    const heading = line.match(/^#{2,6}\s+(.+)$/)?.[1];
-    if (heading) {
-      currentKind = sectionKindFor(heading) ?? "tasks";
-      continue;
-    }
-
-    const item = line.match(/^(?:[-*]|\d+[.)])\s+(.+)$/)?.[1]?.trim();
-    if (item) {
-      sections[currentKind].push(item);
-    }
-  }
-
-  return sections;
-}
-
 export function estimateTokens(content: string): number {
   return Math.ceil(content.length / 4);
 }
 
 export function compressToPlannablePlan(input: string, fallbackName = "Imported Plan"): string {
+  if (hasValidHeader(input)) return input;
   const title = input.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? fallbackName;
   const sections = extractSectionedItems(input);
 
@@ -262,10 +243,7 @@ export function compressToPlannablePlan(input: string, fallbackName = "Imported 
       : ["Inspect the source plan and identify the next concrete implementation task."];
   const acceptance =
     sections.acceptance.length > 0 ? sections.acceptance : tasks.slice(0, 3).map((task) => `Completed: ${task}`);
-  const verification =
-    sections.verification.length > 0
-      ? sections.verification.map((item) => (item.endsWith("?") ? item : `${item}?`))
-      : ["npm run typecheck?", "npm test?", "npm run build?"];
+  const verification = sections.verification.length > 0 ? sections.verification : UNKNOWN_CHECKS;
   const context = [
     `source: imported from "${title}"`,
     ...sections.context,
@@ -282,7 +260,7 @@ export function compressToPlannablePlan(input: string, fallbackName = "Imported 
     "DEP=[]",
     "",
     "DICT:",
-    "G=goal; CTX=context; C=constraint; F=file; T=task; AC=acceptance; V=verify; DONE=completion_updates; S=stop",
+    "G=goal; CTX=context; C=constraint; F=file; T=task; AC=acceptance; V=verify; DONE=completion; S=stop",
     "",
     "G:",
     `- ${title}`,
@@ -296,9 +274,7 @@ export function compressToPlannablePlan(input: string, fallbackName = "Imported 
     "- ask-before-new-deps",
     "",
     "F:",
-    "+ src/*",
-    "? tests/*",
-    "? docs/*",
+    "? identify files for this part",
     "",
     "T:",
     ...tasks.map((task, index) => `${index + 1} ${task}`),
@@ -310,11 +286,11 @@ export function compressToPlannablePlan(input: string, fallbackName = "Imported 
     ...verification.map((item) => `- ${item}`),
     "",
     "DONE:",
-    "- update MASTER_PLAN.md Part 1=[x]",
-    "- append PLAN_EVIDENCE.md#PART-001 with files+checks+notes",
-    "- run plannable repair to regenerate PLAN_STATE.md",
+    "- append PLAN_EVIDENCE.md#PART-001: summary+files+checks+notes",
+    "- run plannable complete PART-001",
     "",
     "S:",
+    ...sections.stop.map((item) => `- ${item}`),
     "- if source plan is ambiguous, stop and ask",
     "- if required project context is missing, record the blocker"
   ].join("\n");
@@ -345,8 +321,30 @@ function parseBlock(content: string, blockName: string): string[] {
   return items;
 }
 
+function stripListMarker(item: string): string {
+  return item.replace(/^(?:[-+?]\s+|\d+[.)]?\s+)/, "");
+}
+
 function renderReadableList(items: string[]): string {
-  return items.length > 0 ? items.map((item) => `- ${item.replace(/^[-+\d.\s?]+/, "")}`).join("\n") : "- None listed";
+  return items.length > 0 ? items.map(renderReadableItem).join("\n") : "- None listed";
+}
+
+function renderReadableItem(item: string): string {
+  const value = stripListMarker(item);
+  const code = value.match(/^code\[(.*?)\]: (".*")$/);
+  if (code) {
+    try {
+      const body: unknown = JSON.parse(code[2]);
+      if (typeof body === "string") {
+        const width = (body.match(/`+/g) ?? []).reduce((max, run) => Math.max(max, run.length + 1), 3);
+        const fence = "`".repeat(width);
+        return `${fence}${code[1]}\n${body}\n${fence}`;
+      }
+    } catch {
+      // Hand-edited non-JSON values remain visible as ordinary list text.
+    }
+  }
+  return `- ${value}`;
 }
 
 function looksBinaryOrBase64(content: string): boolean {

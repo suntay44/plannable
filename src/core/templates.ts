@@ -11,6 +11,7 @@ import {
 export type { Scenario } from "./scenario-hints/index.js";
 
 export type PlanModel = {
+  request?: string;
   productName: string;
   productSlug: string;
   productGoal: string;
@@ -141,6 +142,7 @@ export function buildPlanModel(rawName: string): PlanModel {
   const normalized = productName.toLowerCase();
 
   return {
+    request: rawName.trim() === productName ? undefined : rawName.trim(),
     productName,
     productSlug: slugify(productName),
     productGoal: productGoalFor(productName, normalized),

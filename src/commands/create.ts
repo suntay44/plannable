@@ -1,3 +1,4 @@
+import { detectProjectContext } from "../core/project-context.js";
 import { renderMasterPlan } from "../core/master-plan.js";
 import { renderPartPlan } from "../core/plannable-plan.js";
 import { renderPlanState } from "../core/state.js";
@@ -27,6 +28,7 @@ export async function createCommand(options: CreateOptions): Promise<void> {
   }
 
   const model = buildPlanModel(productInput);
+  const project = await detectProjectContext(options.cwd);
   const createdAt = new Date().toISOString();
 
   await writeProjectText(options.cwd, "MASTER_PLAN.md", await renderMasterPlan(model), overwrite);
@@ -42,7 +44,7 @@ export async function createCommand(options: CreateOptions): Promise<void> {
     await writeProjectText(
       options.cwd,
       `plans/PART${index + 1}_PLAN.ai.md`,
-      await renderPartPlan(model, scenario, index),
+      await renderPartPlan(model, scenario, index, project),
       overwrite
     );
   }

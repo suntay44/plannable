@@ -27,7 +27,7 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/**/*.mjs\" \"*.{js,ts,json}\" \".github/**/*.{yml,yaml}\"",
     "lint": "eslint src tests scripts eslint.config.js vitest.config.ts",
     "package:check": "node scripts/check-package.mjs",
-    "prepack": "npm run build",
+    "prepare": "npm run build",
     "start": "node dist/cli.js",
     "test": "vitest run",
     "test:watch": "vitest",

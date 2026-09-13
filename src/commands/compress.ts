@@ -1,5 +1,5 @@
 import path from "node:path";
-import { estimateTokens, renderPlanFromMarkdown } from "../core/plannable-plan.js";
+import { estimateTokens, renderPlanFromMarkdown, validatePlannablePlan } from "../core/plannable-plan.js";
 import { readText, writeText } from "../core/filesystem.js";
 
 export async function compressCommand(cwd: string, args: string[]): Promise<void> {
@@ -13,7 +13,10 @@ export async function compressCommand(cwd: string, args: string[]): Promise<void
   const output = renderPlanFromMarkdown(input, path.basename(inputPath, path.extname(inputPath)));
   const outputPath = path.join(path.dirname(inputPath), `${path.basename(inputPath, path.extname(inputPath))}.ai.md`);
 
+  const validation = validatePlannablePlan(output);
+  if (!validation.ok) throw new Error(`Cannot compress invalid PlannablePlan: ${validation.errors.join("; ")}`);
   await writeText(outputPath, output, true);
+  for (const warning of validation.warnings) console.warn(`Warning: ${warning}`);
 
   const inputTokens = estimateTokens(input);
   const outputTokens = estimateTokens(output);

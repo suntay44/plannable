@@ -1,6 +1,6 @@
 ---
 name: plannable
-description: Create, run, verify, and complete implementation plans (plannable, master plan, plan parts, run-next). Generates MASTER_PLAN.md and compressed PlannablePlan .ai.md part files for progressive, evidence-based execution. Use for planning a feature or product, splitting work into parts, checking plan status, recording evidence, or compressing/expanding plan files.
+description: Create and execute scenario-driven implementation plans with MASTER_PLAN.md, one PlannablePlan part at a time, and evidence-gated completion. Use for plannable create, run-next, status, verify, evidence, complete, compress, or expand.
 ---
 
 # Plannable
@@ -16,6 +16,8 @@ All `.ai.md` files must start with:
 ```txt
 @PlannablePlan v0.1
 ```
+
+The CLI is a separate prerequisite. Run it in the target project, not the skill folder. If `plannable` is not on PATH, use the project’s `node_modules/.bin/plannable` with the same arguments. If neither exists, report the missing CLI; do not silently fetch a package.
 
 ## Codex Command Style
 
@@ -45,13 +47,13 @@ $plannable verify
 
 `plannable create` writes a deterministic first draft. Scenario hints exist for common domains (CRM, TODO, restaurant, billing, mobile, API); everything else gets generic scaffold wording. Before implementing:
 
-1. Read `MASTER_PLAN.md` and replace generic scenarios with product-specific ones the user actually described.
-2. Update each `plans/PART*_PLAN.ai.md`: rewrite `G`, `T`, and `AC` lines with concrete product detail, and fill the `CTX` block with the detected stack and conventions.
+1. Read `MASTER_PLAN.md` and replace generic scenarios with product-specific ones the user actually described. Preserve any `CTX` request and user exclusions; revise conflicting scenario hints.
+2. Enrich one part at a time: make `G` the user goal, `T` concrete actions, and `AC` observable results (include a failure case). Keep only relevant stack, conventions, and dependency facts in `CTX`; replace guesses in `F` and `V` with actual paths and checks.
 3. Keep the `@PlannablePlan v0.1` structure intact, then run `plannable verify` — it warns on generic draft wording until the plan is enriched.
 
 ## CTX: Compressed Phase Context
 
-Every part file carries a `CTX:` block so one part is enough context: the product goal, what prior parts delivered, and what the next part covers. Trust `CTX` instead of loading other part files.
+Every part file carries a `CTX:` block so one part is enough context: the product goal, what prior parts delivered, and what the next part covers. Trust `CTX` instead of loading other part files. Reuse part content printed by `run-next`; do not reread it unless changed. Keep wording short; preserve commands, paths, constraints, and acceptance detail.
 
 ## State Is Generated
 
@@ -63,7 +65,7 @@ Every part file carries a `CTX:` block so one part is enough context: the produc
 $plannable create a CRM
 $plannable create an inventory management app
 $plannable run-next
-$plannable evidence PART-001 "Implemented and verified the active part"
+$plannable evidence PART-001 "Implemented and verified the active part" --artifact "npm test"
 $plannable complete PART-001
 plannable create "CRM"
 plannable create "SaaS billing dashboard"

@@ -1,11 +1,16 @@
 import { execFile } from "node:child_process";
 import console from "node:console";
+import process from "node:process";
 import { readFile } from "node:fs/promises";
 import { URL } from "node:url";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const { stdout } = await execFileAsync("npm", ["pack", "--dry-run", "--ignore-scripts", "--json"], {
+const npmCli = process.env.npm_execpath;
+const args = ["pack", "--dry-run", "--ignore-scripts", "--json"];
+const { stdout } = await execFileAsync(npmCli ? process.execPath : "npm", npmCli ? [npmCli, ...args] : args, {
+  // Direct invocation on Windows needs a shell for npm.cmd; npm scripts use Node directly.
+  shell: !npmCli && process.platform === "win32",
   maxBuffer: 2 * 1024 * 1024
 });
 const [pack] = JSON.parse(stdout);
@@ -18,6 +23,13 @@ const required = [
   "LICENSE",
   "dist/cli.js",
   "templates/PART_PLAN.ai.md",
+  "templates/MASTER_PLAN.md",
+  "templates/PLAN_STATE.md",
+  "templates/PLAN_EVIDENCE.md",
+  ".agents/skills/plannable/agents/openai.yaml",
+  ".codex/skills/plannable/agents/openai.yaml",
+  ".cursor/commands/plannable.md",
+  ".cursor/rules/plannable.mdc",
   ".agents/skills/plannable/SKILL.md",
   ".codex/skills/plannable/SKILL.md",
   ".claude/skills/plannable/SKILL.md",

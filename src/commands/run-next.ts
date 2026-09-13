@@ -26,7 +26,9 @@ export async function getRunNextSummary(cwd: string, includeContent = true): Pro
   return {
     next,
     instruction: [
-      "Read MASTER_PLAN.md, then load only the part file above.",
+      includeContent
+        ? "Use the part content below; do not reread its file. Read MASTER_PLAN.md once for orientation."
+        : "Read MASTER_PLAN.md, then load only the part file above.",
       "Implement only this part.",
       "Do not check off until evidence is written."
     ],
@@ -59,7 +61,7 @@ export async function runNextCommand(cwd: string, args: string[] = []): Promise<
   console.log(`Outcome: ${summary.next.outcome}`);
   console.log(`Load only: ${summary.next.path}`);
   if (summary.estimatedTokens !== undefined) {
-    console.log(`Context cost: ~${summary.estimatedTokens} tokens (this part is all the plan context needed)`);
+    console.log(`Context cost: ~${summary.estimatedTokens} tokens (part only; excludes master and instructions)`);
   }
   console.log("");
   console.log("Agent instruction:");

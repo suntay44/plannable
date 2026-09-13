@@ -26,6 +26,10 @@ Agents should avoid loading all part files at once. Each part has enough compres
 
 `plannable create "<software plan>"` writes `MASTER_PLAN.md`, `PLAN_STATE.md`, `PLAN_EVIDENCE.md`, and `plans/PART*_PLAN.ai.md` files in the current directory.
 
+`create` reads available `package.json` scripts (`typecheck`, `lint`, `test`, `build`) once and selects npm/pnpm/yarn/bun from an explicit `packageManager` or an unambiguous lockfile; npm is the fallback for a manifest without either. It lists existing common source/test directories as candidate paths. It does not execute scripts, infer a framework, or verify tool availability. Unknown checks remain an instruction to identify them, not invented npm commands. Invalid JSON fails before plan files are written.
+
+If display-name normalization changes the input, each part retains the original request as a JSON string in `CTX`; agents must respect its flags and exclusions when enriching scenario hints.
+
 ## Run-Next Workflow
 
 `plannable run-next` reads `MASTER_PLAN.md`, finds the first unchecked part, prints the part number, scenario, path, outcome, and the single compressed part file to load.
@@ -36,11 +40,13 @@ Agents should avoid loading all part files at once. Each part has enough compres
 
 ## Compress Workflow
 
-`plannable compress plan.md` converts a Markdown-ish task file into `plan.ai.md` using the symbolic PlannablePlan v0.1 structure, mapping task/acceptance/verification/context sections into the right blocks and reporting estimated token savings.
+`plannable compress plan.md` converts a Markdown-ish task file into `plan.ai.md` using the symbolic PlannablePlan v0.1 structure, mapping task/acceptance/verification/context/stop sections into the right blocks and reporting estimated token savings. Prose and fenced code are retained; explicit verification commands are no longer marked optional automatically. Unclosed fences fail before output is written. Existing v0.1 content is preserved when recompressed, and the CLI validates it before writing. Copied task/acceptance text produces an advisory warning.
+
+This is a limited Markdown importer, not a lossless Markdown document round-trip: list hierarchy and rich formatting are not reconstructed. Review the output before implementing.
 
 ## Expand Workflow
 
-`plannable expand plans/PART1_PLAN.ai.md` expands a compressed PlannablePlan file into readable Markdown with scenario, goal, outcome, tasks, acceptance criteria, and verification.
+`plannable expand plans/PART1_PLAN.ai.md` expands a compressed PlannablePlan file into readable Markdown with scenario, goal, outcome, tasks, acceptance criteria, verification, completion updates, and stop conditions. Fenced code is restored with its original indentation; numeric names such as `2FA` remain intact.
 
 ## Status Workflow
 

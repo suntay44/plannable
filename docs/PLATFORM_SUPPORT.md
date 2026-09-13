@@ -44,7 +44,9 @@ Claude Code can invoke skills directly with `/plannable`.
 /plannable verify
 ```
 
-Cursor should support Plannable through Agent Skills and optional slash-command wrappers.
+Cursor discovers the standalone skill as `/plannable`. Optional legacy wrapper filenames yield `/plannable-create`, `/plannable-run-next`, etc.; these are not plugin namespaces. Actual Cursor UI discovery remains untested.
+
+See [INSTALL.md](INSTALL.md) for personal/project paths, custom configuration directories, CLI prerequisites, ZIP distinctions, refresh, and uninstall.
 
 ## Shared Workflow
 

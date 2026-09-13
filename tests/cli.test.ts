@@ -12,7 +12,11 @@ const repoRoot = process.cwd();
 const cliPath = path.join(repoRoot, "dist", "cli.js");
 
 beforeAll(async () => {
-  await execFileAsync("npm", ["run", "build"], { cwd: repoRoot });
+  const npmCli = process.env.npm_execpath;
+  await execFileAsync(npmCli ? process.execPath : "npm", npmCli ? [npmCli, "run", "build"] : ["run", "build"], {
+    cwd: repoRoot,
+    shell: !npmCli && process.platform === "win32"
+  });
 });
 
 async function withTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
@@ -159,7 +163,7 @@ describe("Plannable CLI", () => {
       const parsed = parsePlannablePlan(await readFile(path.join(dir, "search.ai.md"), "utf8"));
       expect(parsed.tasks).toEqual(["1 Build search index", "2 Add search endpoint"]);
       expect(parsed.acceptanceCriteria).toEqual(["- Search returns relevant results"]);
-      expect(parsed.verification).toContain("- npm test?");
+      expect(parsed.verification).toContain("- npm test");
       expect(parsed.context.join("\n")).toMatch(/Postgres full-text search only/);
     });
   });
@@ -475,11 +479,11 @@ describe("Plannable CLI", () => {
 
       const part1 = await readFile(path.join(dir, "plans", "PART1_PLAN.ai.md"), "utf8");
       expect(part1).toMatch(/^CTX:/m);
-      expect(part1).toMatch(/prior: none — this is the first part/);
-      expect(part1).toMatch(/next: PART-002 covers "Deal pipeline works"/);
+      expect(part1).toContain("prior: none (first part)");
+      expect(part1).toContain("next: PART-002: Deal pipeline works");
 
       const part3 = await readFile(path.join(dir, "plans", "PART3_PLAN.ai.md"), "utf8");
-      expect(part3).toMatch(/PART-001 delivered "Contact management works"; PART-002 delivered "Deal pipeline works"/);
+      expect(part3).toContain("PART-001: Contact management works; PART-002: Deal pipeline works");
       expect(part3).toMatch(/next: COMPLETE — run plannable verify/);
       expect(parsePlannablePlan(part3).context.length).toBeGreaterThan(0);
     });

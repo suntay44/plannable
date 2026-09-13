@@ -55,11 +55,15 @@ S:
 CTX:
 - product: CRM — managing contacts, companies, deals, tasks, and follow-ups
 - phase: Core CRM Foundation (part 2/3)
-- prior: PART-001 delivered "Contact management works"
+- prior: PART-001: Contact management works
 - next: PART-003 covers "Follow-up tasks work"
 ```
 
 Agents should also append detected stack and conventions to `CTX` while enriching the draft (for example `- stack: Next.js 15 + Prisma + Postgres`).
+
+## Imported Code
+
+Fenced Markdown code is stored as a single semantically readable item, for example `- code[bash]: "npm test\n npm run build"`. The value is a JSON string so newlines, quotes, and indentation survive without becoming plan block delimiters. `expand` restores a fenced block. This is optional content inside existing blocks; the v0.1 structure is unchanged.
 
 ## Optional Blocks
 
