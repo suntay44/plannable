@@ -60,6 +60,17 @@ This is a limited Markdown importer, not a lossless Markdown document round-trip
 
 `plannable complete PART-001` checks that evidence exists, checks off the matching part in `MASTER_PLAN.md` and `PLAN_STATE.md`, marks evidence as recorded, and advances the current part.
 
+Completion is not a transaction across files. Each file replacement is atomic individually: optional `--summary` evidence is saved first, then `MASTER_PLAN.md`, then the derived `PLAN_STATE.md`. A failed command can therefore leave recorded evidence or completion behind.
+
+If the master is saved but the state update fails, `complete` exits with code 1 and explains that completion was recorded, including the original write error. This also applies with `--json`: failures remain text on stderr with no success JSON on stdout. Resolve the filesystem problem first, then run:
+
+```bash
+plannable repair
+plannable verify
+```
+
+With the existing plan files readable and writable, repair rebuilds state from the master and evidence. It cannot fix permissions, unavailable storage, or missing source files. Retrying `plannable complete PART-001` also synchronizes state without duplicating existing substantive evidence, including when repeated with `--summary`. Verify consistency before continuing: `run-next` reads the master and can already select the following part while state is stale.
+
 ## Doctor Workflow
 
 `plannable doctor` prints status and verification together. Use it before handing a plan back to a human or before starting end-to-end testing.

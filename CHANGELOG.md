@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 ## [Unreleased]
 
 ### Fixed
+- `complete` now explains when completion was recorded but the state update failed, preserving the write error and exit code 1 with repair/verify recovery instructions. Regression tests cover write failures, repair, and repeat completion without duplicate evidence.
 - Markdown expansion and recompression retain constraints in the C block.
 - Project-local reads and writes now reject traversal and symbolic-link escapes; overwrites use atomic replacement.
 - Verification now detects drift between master-plan scenarios/outcomes and generated state, including stale evidence markers.

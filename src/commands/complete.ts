@@ -40,7 +40,17 @@ export async function completeCommand(cwd: string, args: string[]): Promise<void
   );
 
   await writeProjectText(cwd, "MASTER_PLAN.md", nextMaster, true);
-  await writeProjectText(cwd, "PLAN_STATE.md", nextState, true);
+  try {
+    await writeProjectText(cwd, "PLAN_STATE.md", nextState, true);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Completion for ${partId} was recorded in MASTER_PLAN.md, but PLAN_STATE.md could not be updated.\n` +
+        "Resolve the write error, then run `plannable repair` and `plannable verify`.\n" +
+        `Write error: ${detail}`,
+      { cause: error }
+    );
+  }
 
   const nextPart = parseMasterPartStatuses(nextMaster).find((part) => part.status === "pending");
   const next = nextPart ? "plannable run-next" : "plannable verify";

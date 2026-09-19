@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rename, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -367,6 +367,85 @@ describe("Plannable CLI", () => {
 
       const verify = await runPlannable(dir, ["verify"]);
       expect(verify.stdout).toMatch(/Plannable verification passed/);
+    });
+  });
+
+  // File symlinks require elevated privileges or Developer Mode on Windows.
+  describe.skipIf(process.platform === "win32")("completion write failure recovery", () => {
+    async function blockWrite(dir: string, name: string) {
+      const file = path.join(dir, name);
+      const backup = `${file}.backup`;
+      await rename(file, backup);
+      // Reads remain valid inside the project; writes must refuse this link.
+      await symlink(path.basename(backup), file);
+      return async () => {
+        await rm(file);
+        await rename(backup, file);
+      };
+    }
+
+    it("does not report completion when the master write fails", async () => {
+      await withTempDir(async (dir) => {
+        await runPlannable(dir, ["create", "CRM"]);
+        await runPlannable(dir, ["evidence", "P1", "Recovery fixture", "--note", "Testing write failures"]);
+        const names = ["MASTER_PLAN.md", "PLAN_STATE.md", "PLAN_EVIDENCE.md"];
+        const before = await Promise.all(names.map((name) => readFile(path.join(dir, name), "utf8")));
+        await blockWrite(dir, "MASTER_PLAN.md");
+
+        await expect(runPlannable(dir, ["complete", "P1"])).rejects.toMatchObject({
+          code: 1,
+          stdout: "",
+          stderr: expect.stringMatching(/^Refusing to write through symbolic link:/)
+        });
+        const after = await Promise.all(names.map((name) => readFile(path.join(dir, name), "utf8")));
+        expect(after).toEqual(before);
+      });
+    });
+
+    it.each(["repair", "retry"])("reports partial completion and recovers with %s", async (recovery) => {
+      await withTempDir(async (dir) => {
+        await runPlannable(dir, ["create", "CRM"]);
+        const stateBefore = await readFile(path.join(dir, "PLAN_STATE.md"), "utf8");
+        const unblock = await blockWrite(dir, "PLAN_STATE.md");
+        const args = ["complete", "P1", "--summary", "Recovery fixture", "--note", "Testing write failures"];
+        // Exercise both plain and --json invocations; failures retain stderr + exit 1.
+        if (recovery === "retry") args.push("--json");
+        await expect(runPlannable(dir, args)).rejects.toMatchObject({
+          code: 1,
+          stdout: "",
+          stderr: expect.stringContaining(
+            "Completion for PART-001 was recorded in MASTER_PLAN.md, but PLAN_STATE.md could not be updated."
+          )
+        });
+        const master = await readFile(path.join(dir, "MASTER_PLAN.md"), "utf8");
+        const evidence = await readFile(path.join(dir, "PLAN_EVIDENCE.md"), "utf8");
+        expect(master).toMatch(/- \[x\] Part 1:/);
+        expect(evidence.match(/### PART-001/g)).toHaveLength(1);
+        expect(await readFile(path.join(dir, "PLAN_STATE.md"), "utf8")).toBe(stateBefore);
+        await expect(runPlannable(dir, ["verify"])).rejects.toMatchObject({ code: 1 });
+        expect(JSON.parse((await runPlannable(dir, ["run-next", "--json"])).stdout).next.path).toBe(
+          "plans/PART2_PLAN.ai.md"
+        );
+
+        // Retrying before clearing the blocker still fails and must preserve evidence.
+        await expect(runPlannable(dir, args)).rejects.toMatchObject({
+          code: 1,
+          stderr: expect.stringMatching(
+            /Resolve the write error, then run `plannable repair` and `plannable verify`\.[\s\S]*Refusing to write through symbolic link:/
+          )
+        });
+        await unblock();
+        await runPlannable(dir, recovery === "repair" ? ["repair"] : args);
+        await runPlannable(dir, ["verify"]);
+        const recoveredState = await readFile(path.join(dir, "PLAN_STATE.md"), "utf8");
+        expect(recoveredState).toMatch(/- \[x\] Part 1:/);
+        // A further successful retry is idempotent, including the --summary evidence.
+        await runPlannable(dir, args);
+        expect(await readFile(path.join(dir, "MASTER_PLAN.md"), "utf8")).toBe(master);
+        expect(await readFile(path.join(dir, "PLAN_STATE.md"), "utf8")).toBe(recoveredState);
+        expect(await readFile(path.join(dir, "PLAN_EVIDENCE.md"), "utf8")).toBe(evidence);
+        await runPlannable(dir, ["verify"]);
+      });
     });
   });
 
