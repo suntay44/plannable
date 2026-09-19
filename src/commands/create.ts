@@ -1,3 +1,5 @@
+import { loadGuidance } from "../core/guidance/catalog.js";
+import { selectGuidance } from "../core/guidance/select.js";
 import { detectProjectContext } from "../core/project-context.js";
 import { renderMasterPlan } from "../core/master-plan.js";
 import { renderPartPlan } from "../core/plannable-plan.js";
@@ -29,9 +31,16 @@ export async function createCommand(options: CreateOptions): Promise<void> {
 
   const model = buildPlanModel(productInput);
   const project = await detectProjectContext(options.cwd);
+  project.guidance = selectGuidance(await loadGuidance(), project.facts);
   const createdAt = new Date().toISOString();
 
-  await writeProjectText(options.cwd, "MASTER_PLAN.md", await renderMasterPlan(model), overwrite);
+  await writeProjectText(
+    options.cwd,
+    "MASTER_PLAN.md",
+    (await renderMasterPlan(model)) +
+      "\n## Planning safeguards\n\nRoutine secret handling and behavior checks are included in each part. Before coding, inspect this project and add applicable safeguards using the installed skill references. Record owner decisions and unknowns here. These are planned checks, not proof of application security.\n",
+    overwrite
+  );
   await writeProjectText(options.cwd, "PLAN_STATE.md", await renderPlanState(model, createdAt), overwrite);
   await writeProjectText(
     options.cwd,

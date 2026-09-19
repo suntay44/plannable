@@ -16,24 +16,24 @@ CTX:
 - product: {{productName}} — {{productGoal}}
 - phase: {{phaseName}} (part {{partNumber}}/{{partCount}})
 - prior: {{priorContext}}
-- next: {{nextContext}}{{requestContext}}
+- next: {{nextContext}}{{requestContext}}{{guidanceContext}}
 
 C:
 - preserve-existing-work
 - avoid-unrelated-edits
-- ask-before-new-deps
+- ask-before-new-deps{{guidanceConstraints}}
 
 F:
 {{files}}
 
 T:
-{{steps}}
+{{steps}}{{guidanceTasks}}
 
 AC:
-{{acceptanceCriteria}}
+{{acceptanceCriteria}}{{guidanceAcceptance}}
 
 V:
-{{verification}}
+{{verification}}{{guidanceVerification}}
 
 DONE:
 - append PLAN_EVIDENCE.md#{{partId}}: summary+files+checks+notes
@@ -41,4 +41,4 @@ DONE:
 
 S:
 - if project structure is unclear, inspect before editing
-- if acceptance requires product scope outside this part, record a TODO
+- if acceptance requires product scope outside this part, record a TODO{{guidanceStops}}

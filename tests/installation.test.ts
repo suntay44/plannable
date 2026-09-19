@@ -70,7 +70,23 @@ it("builds at prepare time and installs a self-contained package outside the che
       const project = path.join(root, `smoke ${index}`);
       await mkdir(project);
       const cli = path.join(packageRoot, "dist", "cli.js");
+      if (process.platform !== "win32") {
+        const bin =
+          index === 0 ? path.join(consumer, "node_modules/.bin/plannable") : path.join(prefix, "bin/plannable");
+        expect((await exec(bin, ["--version"], { cwd: project, env })).stdout.trim()).toBe(version);
+      }
       await exec(process.execPath, [cli, "create", "CRM"], { cwd: project, env });
+      expect(await readFile(path.join(project, "plans/PART1_PLAN.ai.md"), "utf8")).toContain("baseline.secrets@1");
+      for (const platform of [".agents", ".codex", ".claude", ".cursor"]) {
+        const copied = path.join(root, `custom ${index} ${platform}`, "skills", "plannable");
+        await cp(path.join(packageRoot, platform, "skills", "plannable"), copied, { recursive: true });
+        const skill = await readFile(path.join(copied, "SKILL.md"), "utf8");
+        expect(skill).toContain("references/guidance.md");
+        const guide = await readFile(path.join(copied, "references/guidance.md"), "utf8");
+        for (const [, relative] of guide.matchAll(/\]\(\.\/([a-z]+\.md)\)/g)) {
+          expect(await readFile(path.join(copied, "references", relative), "utf8")).toContain("AC:");
+        }
+      }
       expect((await exec(process.execPath, [cli, "verify"], { cwd: project, env })).stdout).toContain(
         "verification passed"
       );
@@ -94,7 +110,7 @@ it("builds at prepare time and installs a self-contained package outside the che
   } finally {
     await rm(root, { recursive: true, force: true });
   }
-}, 60_000);
+}, 120_000);
 
 it("uses supported Codex metadata without pretending to register CLI subcommands", async () => {
   const metadata = await readFile(path.join(repoRoot, ".agents/skills/plannable/agents/openai.yaml"), "utf8");

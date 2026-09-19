@@ -1,0 +1,24 @@
+{
+  "id": "quality",
+  "revision": 1,
+  "reviewed": "2026-09-17",
+  "sources": ["https://www.w3.org/WAI/WCAG22/quickref/", "https://csrc.nist.gov/pubs/sp/800/218/final"],
+  "rules": [
+    {
+      "id": "quality.change",
+      "when": "always",
+      "constraint": "Preserve conventions and existing behavior.",
+      "task": "Handle failures and test changed behavior.",
+      "acceptance": "Failure is understandable; the intended outcome still works.",
+      "verification": "Run relevant project checks; distinguish passed from unavailable."
+    },
+    {
+      "id": "quality.ui",
+      "when": "ui",
+      "constraint": "Preserve accessible interaction.",
+      "task": "Use semantic controls and actionable form errors.",
+      "acceptance": "Keyboard use and error recovery work alongside normal interaction.",
+      "verification": "Check affected controls with keyboard and invalid/valid input."
+    }
+  ]
+}

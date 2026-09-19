@@ -1,0 +1,20 @@
+{
+  "id": "data",
+  "revision": 1,
+  "reviewed": "2026-09-17",
+  "sources": [
+    "https://cheatsheetseries.owasp.org/cheatsheets/User_Privacy_Protection_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html"
+  ],
+  "rules": [
+    {
+      "id": "data.recovery",
+      "when": "storedData",
+      "constraint": "Minimize stored data and redact sensitive errors.",
+      "task": "Define retention/recovery; preserve data on failed changes.",
+      "acceptance": "Failed changes preserve data; sensitive errors are redacted; valid changes work.",
+      "verification": "Use disposable data to check failure, redaction and recovery."
+    }
+  ]
+}

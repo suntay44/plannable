@@ -1,0 +1,37 @@
+{
+  "id": "input",
+  "revision": 1,
+  "reviewed": "2026-09-17",
+  "sources": [
+    "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html"
+  ],
+  "rules": [
+    {
+      "id": "input.boundary",
+      "when": "externalInput",
+      "constraint": "Validate at trusted boundaries; use safe query/command/output APIs.",
+      "task": "Constrain input shape/size; keep untrusted data out of executable syntax.",
+      "acceptance": "Malformed/injection input is rejected or stays data; valid input works.",
+      "verification": "Test malformed and injection payloads plus legitimate input."
+    },
+    {
+      "id": "input.files",
+      "when": "files",
+      "constraint": "Constrain paths, uploads and sizes; preserve unrelated files.",
+      "task": "Use contained paths and permitted file types/sizes for this feature.",
+      "acceptance": "Traversal and oversized files fail without unrelated changes; allowed files work.",
+      "verification": "Test traversal, limits and a valid operation in temporary directories."
+    },
+    {
+      "id": "input.urls",
+      "when": "outboundUrls",
+      "constraint": "Constrain destinations for server-side requests.",
+      "task": "Apply destination rules and redirect checks for the actual service.",
+      "acceptance": "Unapproved destinations/redirects fail; approved requests work.",
+      "verification": "Test destination and redirect restrictions without contacting private networks."
+    }
+  ]
+}

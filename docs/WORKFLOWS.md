@@ -69,3 +69,9 @@ Use `plannable doctor --json` when an agent needs machine-readable status and ve
 ## Repair Workflow
 
 `plannable repair` syncs evidence markers in `MASTER_PLAN.md` and regenerates `PLAN_STATE.md` from `MASTER_PLAN.md` and `PLAN_EVIDENCE.md` (the sources of truth). It does not invent missing evidence or complete work.
+
+## Planning safeguards
+
+New drafts include routine secret handling and behavior-check requirements. Declared package dependencies add dependency-review guidance. The CLI does not infer accounts, private data or providers from names/dependencies. During existing enrichment, agents inspect scope and use the installed skill’s relative guidance references for conditional rules. See [the guidance contract](GUIDANCE.md).
+
+`expand` retains the C constraints block; Markdown constraint sections import into C. Rule-tag diagnostics are advisory; they neither execute checks nor certify security. Distinguish planned safeguards from implemented changes and observed check results.

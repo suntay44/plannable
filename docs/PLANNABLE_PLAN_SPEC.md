@@ -87,3 +87,7 @@ Agents should load only the next pending `.ai.md` part. The human-facing `MASTER
 - Loading all part files at once
 - Checking off work without evidence
 - Calling the format PlanPack
+
+## Optional guidance tags
+
+Existing blocks can carry expected rule IDs/revisions in CTX and matching `[rule.id]` lines in C/T/AC/V. [GUIDANCE.md](GUIDANCE.md) defines the marker syntax and limits. Missing mappings produce warnings only; v0.1 plans without markers keep their existing behavior. Constraints survive expansion and supported Markdown import.

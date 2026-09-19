@@ -47,3 +47,7 @@ tests/            cli.test.ts (end-to-end in temp dirs), core.test.ts (unit)
 3. Open a PR describing what changed and why. Update CHANGELOG.md under `[Unreleased]`.
 
 Maintainers should follow [docs/RELEASING.md](docs/RELEASING.md) for releases.
+
+## Planning guidance
+
+Use the [guidance contract and contribution recipe](docs/GUIDANCE.md) for security and code-quality rules. Include relevant and irrelevant-context fixtures, primary sources, and review dates. Never claim that plan validation proves application security.

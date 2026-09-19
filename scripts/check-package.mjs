@@ -13,6 +13,7 @@ const { stdout } = await execFileAsync(npmCli ? process.execPath : "npm", npmCli
   shell: !npmCli && process.platform === "win32",
   maxBuffer: 2 * 1024 * 1024
 });
+await execFileAsync(process.execPath, ["scripts/sync-guidance.mjs", "--check"]);
 const [pack] = JSON.parse(stdout);
 const paths = new Set(pack.files.map((file) => file.path));
 const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
@@ -35,9 +36,20 @@ const required = [
   ".claude/skills/plannable/SKILL.md",
   ".cursor/skills/plannable/SKILL.md"
 ];
+for (const name of ["baseline", "access", "data", "input", "services", "quality"]) {
+  required.push(`templates/guidance/${name}.json`);
+  for (const platform of [".agents", ".codex", ".claude", ".cursor"])
+    required.push(`${platform}/skills/plannable/references/${name}.md`);
+}
+for (const platform of [".agents", ".codex", ".claude", ".cursor"])
+  required.push(`${platform}/skills/plannable/references/guidance.md`);
 const missing = required.filter((file) => !paths.has(file));
 const forbidden = [...paths].filter(
-  (file) => file.endsWith("settings.local.json") || file.includes("/.env") || file.startsWith(".env")
+  (file) =>
+    file.endsWith("settings.local.json") ||
+    file.includes("/.env") ||
+    file.startsWith(".env") ||
+    file.startsWith("docs/initiatives/")
 );
 
 if (missing.length > 0) {

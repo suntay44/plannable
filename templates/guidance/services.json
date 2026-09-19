@@ -1,0 +1,27 @@
+{
+  "id": "services",
+  "revision": 1,
+  "reviewed": "2026-09-17",
+  "sources": [
+    "https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html"
+  ],
+  "rules": [
+    {
+      "id": "services.events",
+      "when": "incomingEvents",
+      "constraint": "Keep credentials trusted; verify incoming events.",
+      "task": "Use provider docs for authenticity, retries and duplicate handling.",
+      "acceptance": "Forged/duplicate events cannot repeat side effects; valid events work.",
+      "verification": "Test fake and repeated events using provider fixtures; record limitations."
+    },
+    {
+      "id": "services.resources",
+      "when": "publicService",
+      "constraint": "Bound costly work and verify production transport/config.",
+      "task": "Reuse suitable request/resource limits; inspect deployment settings.",
+      "acceptance": "Repeated costly requests stay bounded; valid use works.",
+      "verification": "Test limits locally and inspect actual production config when authorized."
+    }
+  ]
+}

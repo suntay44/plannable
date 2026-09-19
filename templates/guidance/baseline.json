@@ -1,0 +1,27 @@
+{
+  "id": "baseline",
+  "revision": 1,
+  "reviewed": "2026-09-17",
+  "sources": [
+    "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html"
+  ],
+  "rules": [
+    {
+      "id": "baseline.secrets",
+      "when": "always",
+      "constraint": "Keep secrets out of source, plans and logs.",
+      "task": "Use placeholders and existing secret configuration.",
+      "acceptance": "A fake secret stays out of changed public outputs; valid config works.",
+      "verification": "Check changed outputs with a fake secret; record results."
+    },
+    {
+      "id": "baseline.dependencies",
+      "when": "dependencies",
+      "constraint": "Preserve protections; avoid blind dependency upgrades.",
+      "task": "Review changed dependencies/config and dev/production differences.",
+      "acceptance": "Changes preserve required behavior; unresolved advisories are recorded.",
+      "verification": "Review lock/config diff and run relevant existing checks."
+    }
+  ]
+}

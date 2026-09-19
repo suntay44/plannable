@@ -51,6 +51,12 @@ $plannable verify
 2. Enrich one part at a time: make `G` the user goal, `T` concrete actions, and `AC` observable results (include a failure case). Keep only relevant stack, conventions, and dependency facts in `CTX`; replace guesses in `F` and `V` with actual paths and checks.
 3. Keep the `@PlannablePlan v0.1` structure intact, then run `plannable verify` — it warns on generic draft wording until the plan is enriched.
 
+## Routine Safeguards
+
+During enrichment, use [the bundled guidance index](references/guidance.md) and load only applicable module references. The agent owns routine technical protection; ask owners only unresolved product choices after inspecting known context. Do not infer features from a name or add accounts/payments the user excluded.
+
+Before coding the active part, include applicable safeguards in C/T/AC/V with a matching CTX basis. Refresh them when scope changes; keep unresolved decisions in CTX/S. Use real checks and distinguish planned, implemented, passed and unavailable. Do not claim that verify/complete audits or certifies application security.
+
 ## CTX: Compressed Phase Context
 
 Every part file carries a `CTX:` block so one part is enough context: the product goal, what prior parts delivered, and what the next part covers. Trust `CTX` instead of loading other part files. Reuse part content printed by `run-next`; do not reread it unless changed. Keep wording short; preserve commands, paths, constraints, and acceptance detail.

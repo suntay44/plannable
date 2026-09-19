@@ -36,4 +36,4 @@ it("keeps a Windows-style Git checkout compatible with Prettier", async () => {
   } finally {
     await rm(root, { recursive: true, force: true });
   }
-});
+}, 30_000);

@@ -24,7 +24,10 @@ it("uses declared package scripts and manager without inventing checks or paths"
     );
     await createCommand({ cwd, args: ["CRM"] });
     const content = await readFile(path.join(cwd, "plans/PART1_PLAN.ai.md"), "utf8");
-    expect(parsePlannablePlan(content).verification).toEqual(["- pnpm run lint", "- pnpm run test"]);
+    expect(parsePlannablePlan(content).verification.filter((line) => !line.startsWith("- ["))).toEqual([
+      "- pnpm run lint",
+      "- pnpm run test"
+    ]);
     expect(content).toContain("? src/");
     expect(content).not.toContain("components/*");
     expect(content).not.toContain("npm run build");

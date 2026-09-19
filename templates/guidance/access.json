@@ -1,0 +1,35 @@
+{
+  "id": "access",
+  "revision": 1,
+  "reviewed": "2026-09-17",
+  "sources": [
+    "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html",
+    "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html"
+  ],
+  "rules": [
+    {
+      "id": "access.owner",
+      "when": "privateData",
+      "constraint": "Enforce record permissions at the trusted boundary.",
+      "task": "Reuse ownership checks for each private read/write.",
+      "acceptance": "Wrong-owner requests fail; permitted requests work, including direct requests.",
+      "verification": "Test both owners and denied writes; record actual results."
+    },
+    {
+      "id": "access.login",
+      "when": "accounts",
+      "constraint": "Reuse maintained authentication; do not invent crypto.",
+      "task": "Inspect and reuse supported sign-in and session handling.",
+      "acceptance": "Invalid credentials fail; legitimate sign-in works.",
+      "verification": "Test invalid and valid sign-in with disposable accounts."
+    },
+    {
+      "id": "access.session",
+      "when": "browserSession",
+      "constraint": "Protect sessions and state changes for the actual auth design.",
+      "task": "Use supported session expiry/logout and applicable CSRF defenses.",
+      "acceptance": "Expired or forged session actions fail; valid actions work.",
+      "verification": "Test session expiry and cross-origin state changes using stack guidance."
+    }
+  ]
+}

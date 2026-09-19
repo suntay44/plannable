@@ -1,3 +1,5 @@
+import { guidanceWarnings } from "./guidance/diagnostics.js";
+import { renderGuidance } from "./guidance/render.js";
 import { extractSectionedItems } from "./markdown-import.js";
 import { type ProjectContext, UNKNOWN_CHECKS } from "./project-context.js";
 import { readTemplate } from "./filesystem.js";
@@ -17,6 +19,7 @@ export type PlannablePlanSummary = {
 
 export type ParsedPlannablePlan = PlannablePlanSummary & {
   context: string[];
+  constraints: string[];
   tasks: string[];
   acceptanceCriteria: string[];
   verification: string[];
@@ -46,6 +49,7 @@ export function parsePlannablePlan(content: string): ParsedPlannablePlan {
   return {
     ...parsePlanSummary(content),
     context: parseBlock(content, "CTX"),
+    constraints: parseBlock(content, "C"),
     tasks: parseBlock(content, "T"),
     acceptanceCriteria: parseBlock(content, "AC"),
     verification: parseBlock(content, "V"),
@@ -107,6 +111,15 @@ export function validatePlannablePlan(content: string): ValidationResult {
     );
   }
 
+  warnings.push(
+    ...guidanceWarnings({
+      CTX: parsed.context,
+      C: parsed.constraints,
+      T: parsed.tasks,
+      AC: parsed.acceptanceCriteria,
+      V: parsed.verification
+    })
+  );
   return { ok: errors.length === 0, errors, warnings };
 }
 
@@ -162,6 +175,7 @@ export async function renderPartPlan(
   const nextContext = nextScenario ? `${nextPart}: ${nextScenario.partOutcome}` : "COMPLETE — run plannable verify";
 
   return renderTemplate(template, {
+    ...renderGuidance(project?.guidance),
     partId: `PART-${String(partNumber).padStart(3, "0")}`,
     partNumber: String(partNumber),
     partCount: String(model.scenarios.length),
@@ -206,6 +220,9 @@ export function expandPlannablePlan(content: string): string {
     "",
     "## Context",
     renderReadableList(parsed.context),
+    "",
+    "## Constraints",
+    renderReadableList(parsed.constraints),
     "",
     "## Tasks",
     renderReadableList(parsed.tasks),
@@ -272,6 +289,7 @@ export function compressToPlannablePlan(input: string, fallbackName = "Imported 
     "- preserve-existing-work",
     "- avoid-unrelated-edits",
     "- ask-before-new-deps",
+    ...sections.constraints.map((item) => `- ${item}`),
     "",
     "F:",
     "? identify files for this part",

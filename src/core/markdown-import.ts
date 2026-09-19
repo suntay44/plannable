@@ -3,11 +3,13 @@ export type SectionedItems = {
   acceptance: string[];
   verification: string[];
   context: string[];
+  constraints: string[];
   stop: string[];
 };
 
 function sectionKindFor(heading: string): keyof SectionedItems | undefined {
   const normalized = heading.toLowerCase();
+  if (/\bconstraints?\b/.test(normalized)) return "constraints";
   if (/\b(stop|blockers?)\b/.test(normalized)) return "stop";
   if (/\b(acceptance|criteria|done when|definition of done)\b/.test(normalized)) return "acceptance";
   if (/\b(verification|verify|tests?|testing|checks?|qa)\b/.test(normalized)) return "verification";
@@ -22,7 +24,14 @@ function sectionKindFor(heading: string): keyof SectionedItems | undefined {
 }
 
 export function extractSectionedItems(input: string): SectionedItems {
-  const sections: SectionedItems = { tasks: [], acceptance: [], verification: [], context: [], stop: [] };
+  const sections: SectionedItems = {
+    tasks: [],
+    acceptance: [],
+    verification: [],
+    context: [],
+    constraints: [],
+    stop: []
+  };
   let currentKind: keyof SectionedItems = "tasks";
   let fence: { marker: string; language: string; lines: string[] } | undefined;
   let seenTitle = false;

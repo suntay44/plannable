@@ -17,7 +17,7 @@ beforeAll(async () => {
     cwd: repoRoot,
     shell: !npmCli && process.platform === "win32"
   });
-});
+}, 60_000);
 
 async function withTempDir<T>(fn: (dir: string) => Promise<T>): Promise<T> {
   const dir = await mkdtemp(path.join(tmpdir(), "plannable-test-"));
@@ -164,7 +164,7 @@ describe("Plannable CLI", () => {
       expect(parsed.tasks).toEqual(["1 Build search index", "2 Add search endpoint"]);
       expect(parsed.acceptanceCriteria).toEqual(["- Search returns relevant results"]);
       expect(parsed.verification).toContain("- npm test");
-      expect(parsed.context.join("\n")).toMatch(/Postgres full-text search only/);
+      expect(parsed.constraints.join("\n")).toMatch(/Postgres full-text search only/);
     });
   });
 

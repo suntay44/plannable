@@ -1,8 +1,9 @@
 import { lstat } from "node:fs/promises";
 import path from "node:path";
+import type { Facts, Selection } from "./guidance/types.js";
 import { readProjectText } from "./filesystem.js";
 
-export type ProjectContext = { files: string[]; verification: string[] };
+export type ProjectContext = { files: string[]; verification: string[]; facts?: Facts; guidance?: Selection };
 export const UNKNOWN_CHECKS = ["Identify and run project-specific checks; record unavailable checks."];
 
 export async function detectProjectContext(cwd: string): Promise<ProjectContext> {
@@ -14,7 +15,10 @@ export async function detectProjectContext(cwd: string): Promise<ProjectContext>
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     }
   }
-  const context = { files: files.length ? files : ["? identify files for this part"], verification: UNKNOWN_CHECKS };
+  const context: ProjectContext = {
+    files: files.length ? files : ["? identify files for this part"],
+    verification: UNKNOWN_CHECKS
+  };
   let raw: string;
   try {
     raw = await readProjectText(cwd, "package.json");
@@ -22,12 +26,25 @@ export async function detectProjectContext(cwd: string): Promise<ProjectContext>
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return context;
     throw error;
   }
-  let manifest: { scripts?: Record<string, unknown>; packageManager?: unknown } | null;
+  let manifest: {
+    scripts?: Record<string, unknown>;
+    packageManager?: unknown;
+    dependencies?: unknown;
+    devDependencies?: unknown;
+  } | null;
   try {
     manifest = JSON.parse(raw) as typeof manifest;
   } catch {
     throw new Error("Cannot detect project checks: package.json is not valid JSON.");
   }
+  if (
+    manifest &&
+    typeof manifest === "object" &&
+    [manifest.dependencies, manifest.devDependencies].some(
+      (value) => value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length > 0
+    )
+  )
+    context.facts = { dependencies: { value: true, source: "observed", reason: "package.json declares dependencies" } };
   if (!manifest || typeof manifest !== "object" || !manifest.scripts || typeof manifest.scripts !== "object")
     return context;
 
