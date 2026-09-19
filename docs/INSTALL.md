@@ -1,6 +1,6 @@
 # Install
 
-Plannable is a skill, not a hosted plugin. Install the terminal CLI and **one** matching standalone skill separately. Copying `SKILL.md` does not install Node.js or the CLI. No plugin manifest, marketplace catalog, or automatic skill installer is shipped.
+Plannable is a skill, not a hosted plugin. Install the terminal CLI and **one** matching standalone skill separately. Copy the complete skill folder, including `references/`; copying only `SKILL.md` loses the modular guidance. A skill copy does not install Node.js or the CLI. No plugin manifest, marketplace catalog, or automatic skill installer is shipped.
 
 Commands below use a POSIX shell (macOS/Linux), Node.js 22+, npm, and Git. Quote paths containing spaces. Windows CLI packaging is covered by CI; these shell snippets are not PowerShell instructions.
 
@@ -60,7 +60,7 @@ npm install -g plannable
 npx plannable create "CRM"
 ```
 
-The audited public GitHub revision `b93b23b` also lets `npm install -g git+https://github.com/suntay44/Plannable.git` exit 0 without installing the executable. Use the clone/build route above. The local `prepare` hook fix must be published and the remote installation retested before recommending the direct Git shortcut.
+Direct Git installation is not a recommended route. On 2026-09-17, public revision `393ab96` passed fresh clone/build/link checks but `npm install -g git+https://github.com/suntay44/Plannable.git` failed with exit 127 (`tsc: command not found`) on npm 10.9.8 using an isolated custom prefix/cache. The prepare hook is now public; that alone does not establish compatibility with every npm Git-install configuration. Use clone/build/link or a built tarball.
 
 ## Install one agent skill
 

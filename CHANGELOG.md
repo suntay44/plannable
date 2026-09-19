@@ -6,6 +6,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 ## [Unreleased]
 
 ### Fixed
+- Markdown expansion and recompression retain constraints in the C block.
 - Project-local reads and writes now reject traversal and symbolic-link escapes; overwrites use atomic replacement.
 - Verification now detects drift between master-plan scenarios/outcomes and generated state, including stale evidence markers.
 - Evidence only unlocks completion when it includes a substantive artifact, check, file, note, or explicit unavailable reason.
@@ -14,6 +15,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 - Evidence placeholder matching tolerates hand-edited variants (italics, missing period, trailing whitespace).
 
 ### Added
+- Modular security and code-quality planning guidance, inline routine defaults and advisory coverage checks, without new commands or completion gates.
+- Portable guidance references for each agent skill and regression checks for selection, conversion and installed resources.
+- Local security-planning documentation and a private-record example; public release, usability pilot and model outcome validation remain pending.
 - CI across Node.js 22, 24, and 26 on Linux plus Node.js 24 on macOS and Windows.
 - Formatting, linting, package-content validation, Dependabot, and a provenance-ready npm release workflow.
 - Community health files for security reports, support, conduct, issues, and pull requests.

@@ -122,6 +122,18 @@ Refusing: evidence required`}</CodeBlock>
         </div>
       </section>
 
+      <section className="section">
+        <div className="shell split-section">
+          <div><p className="eyebrow">Security and code quality</p><h2>Give the agent requirements it can test.</h2></div>
+          <div className="answer-stack">
+            <p>The unreleased source guidance puts routine safeguards into the existing plan. The agent adds rules that match the actual project and asks you about unresolved product choices.</p>
+            <p>For private records, plan checks that deny another customer’s request while allowing the owner’s. A planned check is not a passed test.</p>
+            <Link className="text-link" href="/docs/security-planning">Explore planning safeguards →</Link>
+            <Link className="text-link" href="/examples/private-customer-app">Read the customer app example →</Link>
+          </div>
+        </div>
+      </section>
+
       <section className="section section-ink">
         <div className="shell split-section">
           <div>
@@ -193,9 +205,10 @@ Refusing: evidence required`}</CodeBlock>
         <div className="shell">
           <p className="eyebrow">Start with the next part</p>
           <h2>Give your agent a plan it can carry.</h2>
-          <CodeBlock>{`git clone https://github.com/suntay44/Plannable.git
-cd Plannable && npm install && npm run build && npm link
-plannable create "your product idea"`}</CodeBlock>
+          <CodeBlock>{`git clone https://github.com/suntay44/Plannable.git "Plannable source" &&
+cd "Plannable source" &&
+npm ci && npm run build && npm link &&
+plannable --version`}</CodeBlock>
           <div className="hero-actions">
             <Link className="button button-primary" href="/docs/getting-started">
               Read the install guide

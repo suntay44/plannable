@@ -11,6 +11,22 @@ export const metadata: Metadata = {
 
 const faqs = [
   [
+    "Do I need to ask for basic security?",
+    "The unreleased source guidance includes secret handling and changed-behavior checks in every new draft. Your agent inspects the project and adds applicable rules, such as ownership checks for private records, through the existing enrichment step. The CLI alone does not infer a complete threat model."
+  ],
+  [
+    "What do I still need to decide?",
+    "Who may access or share data, retention and other product choices. The agent handles routine technical defaults. If you are not sure, it records an open decision and stops affected risky work instead of assuming permission."
+  ],
+  [
+    "Does verify audit my application’s security?",
+    "No. It checks plan structure, state and evidence presence, plus text coverage for tagged guidance. It does not run application security tests or prove evidence is true. Guidance is not a security or compliance guarantee."
+  ],
+  [
+    "What if I do not know my technology stack?",
+    "The agent should inspect the project and consult official documentation for the actual framework. Unknown facts stay unresolved. It should not add accounts, payments or uploads merely because they appear in a generic checklist."
+  ],
+  [
     "What is Plannable?",
     "Plannable is a command-driven planning skill and TypeScript CLI for AI coding agents. It creates a short human master plan and compressed agent-readable parts, then requires evidence before a part can be marked complete."
   ],
@@ -60,6 +76,7 @@ export default function FaqPage() {
           </div>
         ))}
       </dl>
+      <p>See <Link href="/docs/security-planning">guidance coverage, sources and validation limits</Link>, including the pending usability pilot and model comparison.</p>
       <h2>Still deciding?</h2>
       <p>
         Read the <Link href="/compare/spec-kit">spec-kit comparison</Link>, inspect the{" "}

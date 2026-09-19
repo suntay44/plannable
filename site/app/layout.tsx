@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { SiteFooter, SiteHeader } from "./_components/site-chrome";
+import { siteOrigin } from "./_lib/site-origin";
 import "./globals.css";
 
-const fallbackOrigin = "https://plannable-agent-plans.xtiansun.chatgpt.site";
-const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL ?? fallbackOrigin;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
@@ -50,7 +49,7 @@ const structuredData = {
       "@type": "WebSite",
       name: "Plannable",
       url: siteOrigin,
-      description: "Documentation for evidence-gated implementation planning with AI coding agents."
+      description: "Documentation for evidence-gated implementation planning with AI coding agents, including unreleased security planning guidance."
     },
     {
       "@type": "SoftwareSourceCode",
@@ -60,7 +59,7 @@ const structuredData = {
       runtimePlatform: "Node.js 22 or newer",
       license: "https://opensource.org/license/mit",
       description:
-        "A command-driven planning skill and CLI that splits work into small agent-readable parts and requires evidence before completion."
+        "A command-driven planning skill and CLI with compact parts and evidence before completion. Unreleased source guidance adds applicable security and code-quality requirements."
     }
   ]
 };

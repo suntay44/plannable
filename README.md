@@ -40,6 +40,14 @@ Long agent sessions fail in predictable ways: the plan is too big to keep in con
 
 Reach for it when you're starting from a product idea and want a working first plan in seconds instead of a blank page. When a feature spans multiple agent sessions and each session has to pick up exactly where the last one stopped. When you come back to review an agent's work and want the checkmarks to mean something — every completed part points to evidence naming the files, checks, and notes that prove it.
 
+## Plan basic safeguards without changing the workflow
+
+**Unreleased source improvement:** `create` now includes secret handling and changed-behavior checks; projects declaring dependencies also receive dependency/configuration review. During the existing enrichment step, the agent inspects facts and adds only applicable rules from six small modules. No new command or phase is required.
+
+Describe your idea normally: “Customers can view and update their own service requests.” Once customer-only access is confirmed, the plan should require ownership checks, denied cross-customer requests, and legitimate updates that still work. The agent handles technical safeguards; you decide access, sharing, retention and other product choices. “Not sure” stays an open decision before affected risky work.
+
+A planned safeguard, an implemented control and a passed check are different. `verify` checks plan structure and tagged rule coverage, not application security or the truth of evidence. Human usability and repeated-model outcome comparisons remain pending. Guidance adds context; historical token comparisons above do not measure this addition. See [coverage, sources and contribution rules](docs/GUIDANCE.md).
+
 ## Install
 
 > Requires Node.js 22+

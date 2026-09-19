@@ -3,6 +3,7 @@ import Link from "next/link";
 const navItems = [
   { href: "/docs/getting-started", label: "Get started" },
   { href: "/docs/commands", label: "Commands" },
+  { href: "/docs/security-planning", label: "Safeguards" },
   { href: "/concepts/plannableplan", label: "Format" },
   { href: "/compare/spec-kit", label: "Compare" },
   { href: "/faq", label: "FAQ" }
@@ -56,6 +57,8 @@ export function SiteFooter() {
           <p className="eyebrow">Explore</p>
           <Link href="/docs/getting-started">Getting started</Link>
           <Link href="/docs/commands">Command reference</Link>
+          <Link href="/docs/security-planning">Planning safeguards</Link>
+          <Link href="/examples/private-customer-app">Customer app example</Link>
           <Link href="/faq">FAQ</Link>
         </div>
         <div>

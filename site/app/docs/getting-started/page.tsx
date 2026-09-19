@@ -23,16 +23,16 @@ export default function GettingStartedPage() {
       </p>
 
       <h2>Install from GitHub</h2>
-      <CodeBlock>{`git clone https://github.com/suntay44/Plannable.git
-cd Plannable
-npm install
-npm run build
-npm link
+      <CodeBlock>{`git clone https://github.com/suntay44/Plannable.git "Plannable source" &&
+cd "Plannable source" &&
+npm ci && npm run build && npm link &&
 plannable --version`}</CodeBlock>
       <p className="callout">
         The npm release workflow is prepared, but the source install remains the documented path until the package is
         published.
       </p>
+
+      <p>The source folder must remain while linked. Switch to your project before creating a plan. This installs the CLI only; copy one complete matching skill folder, including its references, separately. The <a href="https://github.com/suntay44/Plannable/blob/main/docs/INSTALL.md">platform installation guide</a> covers local installs, custom paths, updates and uninstall. A GitHub source ZIP needs extraction and a build; it is not a plugin ZIP or an individual skill upload.</p>
 
       <h2>Create a plan</h2>
       <CodeBlock>{`mkdir my-project && cd my-project
@@ -43,6 +43,10 @@ plannable run-next`}</CodeBlock>
         compressed <code>plans/PART*_PLAN.ai.md</code> files. Common domains receive sharper scenario hints; other
         ideas receive a draft that should be made product-specific before implementation.
       </p>
+
+      <h2>Plan applicable safeguards</h2>
+      <p>The unreleased source guidance adds secret handling and changed-behavior checks to drafts. Your agent then inspects the project and adds relevant requirements. You decide who may access or share data; the agent handles routine technical safeguards. “Not sure” leaves an unresolved decision, not permission to expose data.</p>
+      <p>Read <Link href="/docs/security-planning">security planning and its limits</Link> before treating a plan as application evidence.</p>
 
       <h2>Run the waterfall loop</h2>
       <ol>
